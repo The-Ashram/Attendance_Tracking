@@ -8,7 +8,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 
 const app = express();
-const port = 8081;
+const port = process.env.PORT || '8080';
 
 dotenv.config({
   path: path.join(__dirname, './../.env'),
@@ -23,12 +23,14 @@ app.use(compression());
 app.use(cookieParser());
 app.use(bodyParser.json());
 
-app.get('/', (req, res) => {
-  res.send('Hello, TypeScript with Express!');
-});
 
 const server = http.createServer(app)
 
 server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
+});
+
+
+app.get('/', (req, res) => {
+  res.send('Hello, TypeScript with Express!');
 });
