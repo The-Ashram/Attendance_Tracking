@@ -4,10 +4,17 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import cors from 'cors';
-
+import dotenv from 'dotenv';
+import path from 'path';
 
 const app = express();
-const port = 8080;
+const port = 8081;
+
+dotenv.config({
+  path: path.join(__dirname, './../.env'),
+});
+
+console.log(process.env.POSTGRES_HOST)
 
 app.use(cors({
   credentials: true,
