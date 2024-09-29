@@ -5,7 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon"
+    "dev": "nodemon",
+    "start": "node ./src/index.ts",
+    "db:generate": "drizzle-kit generate:pg --config=./src/config/drizzle.config.ts",
+    "db:delete": "drizzle-kit drop --config=./src/config/drizzle.config.ts",
+    "db:push": "drizzle-kit push:pg --config=./src/config/drizzle.config.ts",
+    "db:deploy": "ts-node ./drizzle/migrations/migrate.ts"
   },
   "keywords": [],
   "author": "",
