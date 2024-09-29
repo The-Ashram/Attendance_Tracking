@@ -10,7 +10,7 @@ const info: loggerFunction = (namespace, message, object) => {
 
 const warn: loggerFunction = (namespace, message, object) => {
     if (object) {
-        console.warn([`${getTimeStamp()}] [WARN] [${namespace}] ${message}`, object);
+        console.warn(`[${getTimeStamp()}] [WARN] [${namespace}] ${message}`, object);
     } else {
         console.warn(`[${getTimeStamp()}] [WARN] [${namespace}] ${message}`);
     }

@@ -1,4 +1,4 @@
-import config from "config/config"
+import config from "./../../config/config"
 import { migrate } from "drizzle-orm/postgres-js/migrator"
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
@@ -8,7 +8,7 @@ const NAMESPACE = 'Migrate';
 
 const doMigrate = async () => {
     try {
-        const connectionString = `postgres://${config.drizzle.user}:${config.drizzle.pass}@${config.drizzle.host}:${config.server.port}/${config.drizzle.database}`;
+        const connectionString = `postgresql://${config.drizzle.user}:${config.drizzle.pass}@${config.drizzle.host}:${config.server.port}/${config.drizzle.database}`;
         console.log('migrate string: ', connectionString);
         const attendanceTrackingPG = postgres(connectionString, { max: 1 })
         const db = drizzle(attendanceTrackingPG)

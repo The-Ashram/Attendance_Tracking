@@ -7,15 +7,16 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon",
     "start": "node ./src/index.ts",
-    "db:generate": "drizzle-kit generate:pg --config=./src/config/drizzle.config.ts",
+    "db:generate": "drizzle-kit generate --config=./src/config/drizzle.config.ts",
     "db:delete": "drizzle-kit drop --config=./src/config/drizzle.config.ts",
-    "db:push": "drizzle-kit push:pg --config=./src/config/drizzle.config.ts",
-    "db:deploy": "ts-node ./drizzle/migrations/migrate.ts"
+    "db:push": "drizzle-kit push --config=./src/config/drizzle.config.ts",
+    "db:deploy": "ts-node ./src/db/migrations/migrate.ts"
   },
   "keywords": [],
-  "author": "",
+  "author": "Aung Phone Naing",
   "license": "ISC",
   "dependencies": {
+    "@electric-sql/pglite": "^0.2.9",
     "aws-sdk": "^2.1691.0",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
