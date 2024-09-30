@@ -36,4 +36,3 @@ app.get('/', (req, res) => {
   res.send('Hello, TypeScript with Express!');
 });
 
-db.query.attendance.findMany()

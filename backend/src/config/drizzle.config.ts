@@ -5,7 +5,7 @@ import path from 'path';
 
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
-const connectionString = `postgres://${config.drizzle.user}:${config.drizzle.pass}@${config.drizzle.host}:${config.server.port}/${config.drizzle.database}?ssl=true`
+const connectionString = `postgres://${config.drizzle.user}:${config.drizzle.pass}@${config.drizzle.host}:${config.server.port}/${config.drizzle.database}`
 
 console.log("connection string:", connectionString)
 
