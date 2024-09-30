@@ -4,3 +4,4 @@ backend/node_modules/.bin/acorn.cmd
 backend/.env
 /backend/src/db/migrations/meta
 *.sql
+/node_modules
