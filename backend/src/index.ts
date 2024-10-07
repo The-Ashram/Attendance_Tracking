@@ -7,6 +7,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import db from './config/db';
+import userRouter from 'modules/routes/users-routes';
 
 const app = express();
 const port = process.env.PORT || '8080';
@@ -23,6 +24,7 @@ app.use(cors({
 app.use(compression());
 app.use(cookieParser());
 app.use(bodyParser.json());
+app.use('/user', userRouter);
 
 
 const server = http.createServer(app)
