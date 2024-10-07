@@ -4,9 +4,10 @@ import { getErrorMessage, getErrorName } from "../../utils/errorHandler";
 import db from "../../config/db";
 import { DatabaseRequestError } from "../../utils/errorTypes";
 import { eq, sql } from "drizzle-orm";
-import { queryGetAllUsers, queryGetUserByName } from "../../db/queries/users.query";
+import { queryCreateUser, queryDeleteAllUsers, queryDeleteUser, queryGetAllUsers, queryGetUserById, queryUpdateUser } from "../../db/queries/users.query";
+import { PayloadWithId, PayloadWithIdUpdate } from "modules/interfaces/users.interfaces";
 
-const NAMESPACE = "Users-Route";
+const NAMESPACE = "Users-Handler";
 
 type event = {
     source: string;
@@ -19,31 +20,14 @@ const createNewUser: eventHandler = async (event) => {
     const user: UsersSchema = event.payload as UsersSchema;
     
     try {
-        const userInDB = await db
-            .insert(users)
-            .values(user)
-            .returning()
-            .catch((error) => {
-                log.error(NAMESPACE, getErrorMessage(error), error);
-                const e = new DatabaseRequestError('Database query error.', '501');
-                throw e;
-            });
-        
-        if (userInDB.length.valueOf() == 0) {
-            log.error(
-                NAMESPACE,
-                'Database query failed to retrieve user(s)! User array retrieved: ',
-                userInDB
-                );
-                const e = new DatabaseRequestError(
-                    'User has not been added to database',
-                    '501'
-                );
-                throw e;
-        }
+        const userInDB = await queryCreateUser(user);
+        log.info(NAMESPACE, '---------END OF CREATE NEW USER PROCESS---------');
         return {
-            statusCode: 200,
-            data: userInDB
+            statusCode: 201,
+            data: {
+                message: 'User has been added to database.',
+                user: userInDB
+            }
         }
     } catch (error) {
         log.error(NAMESPACE, getErrorMessage(error), error);
@@ -56,75 +40,46 @@ const createNewUser: eventHandler = async (event) => {
     }
 };
 
-const getAllUsers: eventHandler = async (event) => {
+const getUsers: eventHandler = async (event) => {
+    const { id } = event.payload as PayloadWithId;
+
     try {
-        const usersInDB = await queryGetAllUsers();
-
-        if (!usersInDB.length) {
-            log.error(NAMESPACE, 'No users found in database');
-            const e = new DatabaseRequestError('Users not found', '404');
-            throw e;
-        }
-
-        return { statusCode: 200, data: usersInDB };
-
+        const usersInDB = id == null ? await queryGetAllUsers() : await queryGetUserById(id);
+        log.info(NAMESPACE, '---------END OF GET USER(S) PROCESS---------')
+        return { 
+            statusCode: 200, 
+            data: {
+                message: 'User(s) have been retrieved.',
+                users: usersInDB
+            } 
+        };
     } catch (error) {
         log.error(NAMESPACE, getErrorMessage(error), error);
         const code = parseInt(getErrorName(error));
         const errorCode = code || 400;
         return {
             statusCode: errorCode,
-            error: new Error('Get all users request failed.')
+            error: new Error('Get user(s) request failed.')
         };
     }
 }
 
-const getUserByName: eventHandler = async (event) => {
-    const { name } = event.payload as { name: UsersSchema['name'] };
-
-    try {
-        const userInDB = await queryGetUserByName(name);
-
-        if (!userInDB.length) {
-            log.error(NAMESPACE, `No user found with id ${name}`);
-            const e = new DatabaseRequestError('User not found', '404');
-            throw e;
-        }
-
-        return { statusCode: 200, data: userInDB };
-    } catch (error) {
-        log.error(NAMESPACE, getErrorMessage(error), error);
-        const code = parseInt(getErrorName(error));
-        const errorCode = code || 400;
-        return {
-            statusCode: errorCode,
-            error: new Error('Get user by Name request failed.')
-        };
-    }
-};
-
 const updateUser: eventHandler = async (event) => {
-    const { id, updateData } = event.payload as { id: number; updateData: Partial<UsersSchema> };
+    const { id, updateData } = event.payload as PayloadWithIdUpdate;
 
     try {
-        const updatedUser = await db
-            .update(users)
-            .set(updateData)
-            .where(sql`${users.id} = ${id}`)
-            .returning()
-            .catch((error) => {
-                log.error(NAMESPACE, getErrorMessage(error), error);
-                const e = new DatabaseRequestError('Database query error.', '501');
-                throw e;
-            });
-
-        if (!updatedUser.length) {
-            log.error(NAMESPACE, `Failed to update user with id ${id}`);
-            const e = new DatabaseRequestError('User not updated', '404');
-            throw e;
+        if (id == null) {
+            throw new DatabaseRequestError('User id cannot be null.', '400');
         }
-
-        return { statusCode: 200, data: updatedUser };
+        const updatedUser = await queryUpdateUser(id, updateData);
+        log.info(NAMESPACE, '---------END OF UPDATE USER PROCESS---------')
+        return { 
+            statusCode: 200, 
+            data: {
+                message: 'User has been updated.',
+                user: updatedUser
+            } 
+        };
     } catch (error) {
         log.error(NAMESPACE, getErrorMessage(error), error);
         const code = parseInt(getErrorName(error));
@@ -136,42 +91,34 @@ const updateUser: eventHandler = async (event) => {
     }
 };
 
-const deleteUser: eventHandler = async (event) => {
-    const { id } = event.payload as { id: number };
+const deleteUsers: eventHandler = async (event) => {
+    const { id } = event.payload as PayloadWithId;
 
     try {
-        const deletedUser = await db
-            .delete(users)
-            .where(sql`${users.id} = ${id}`)
-            .returning()
-            .catch((error) => {
-                log.error(NAMESPACE, getErrorMessage(error), error);
-                const e = new DatabaseRequestError('Database query error.', '501');
-                throw e;
-            });
-
-        if (!deletedUser.length) {
-            log.error(NAMESPACE, `Failed to delete user with id ${id}`);
-            const e = new DatabaseRequestError('User not found', '404');
-            throw e;
-        }
-
-        return { statusCode: 200, data: deletedUser };
+        const deletedUser = id == null ? await queryDeleteAllUsers() : await queryDeleteUser(id);
+        log.info(NAMESPACE, '---------END OF DELETE USER(S) PROCESS---------')
+        return { 
+            statusCode: 200, 
+            data: {
+                message: 'Users has been deleted.',
+                users: deletedUser
+            } 
+        };
     } catch (error) {
         log.error(NAMESPACE, getErrorMessage(error), error);
         const code = parseInt(getErrorName(error));
         const errorCode = code || 400;
         return {
             statusCode: errorCode,
-            error: new Error('Delete user request failed.')
+            error: new Error('Delete user(s) request failed.')
         };
     }
 };
 
+
 export default {
     createNewUser,
-    getAllUsers,
-    getUserByName,
+    getUsers,
     updateUser,
-    deleteUser
+    deleteUsers
 }

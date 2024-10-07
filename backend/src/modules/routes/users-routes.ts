@@ -14,8 +14,56 @@ const formatCreateUserRequest = (req: Request) => {
   };
 };
 
-userRouter.post('/create', routerEnclose(handler.createNewUser, formatCreateUserRequest));
+const formatGetUserById = (req: Request) => {
+  return {
+      source: "getUserByName",
+      payload: {
+        id: req.params.id,
+        data: req.body
+      }
+  };
+};
 
-userRouter.get('/', routerEnclose(handler.getUserByName, formatCreateUserRequest));
+const formatGetAllUsersRequest = (req: Request) => {
+  return {
+      source: "getAllUsers",
+      payload: req.body,
+  };
+};
+
+
+const formatUpdateUserRequest = (req: Request) => {
+  return {
+      source: "updateUser",
+      payload: {
+        id: req.params.id,
+        updateData: req.body
+      }
+  };
+};
+
+const formatDeleteAllUsersRequest = (req: Request) => {
+  return {
+      source: "deleteAllUsers",
+      payload: req.body,
+  };
+};
+
+const formatDeleteUserById = (req: Request) => {
+  return {
+      source: "deleteUser",
+      payload: {
+        id: req.params.id,
+        data: req.body
+      }
+  };
+};
+
+userRouter.post('/create', routerEnclose(handler.createNewUser, formatCreateUserRequest));
+userRouter.get('/', routerEnclose(handler.getUsers, formatGetAllUsersRequest));
+userRouter.get('/:id', routerEnclose(handler.getUsers, formatGetUserById));
+userRouter.patch('/:id', routerEnclose(handler.updateUser, formatUpdateUserRequest));
+userRouter.delete('/', routerEnclose(handler.deleteUsers, formatDeleteAllUsersRequest));
+userRouter.delete('/:id', routerEnclose(handler.deleteUsers, formatDeleteUserById));
 
 export default userRouter
