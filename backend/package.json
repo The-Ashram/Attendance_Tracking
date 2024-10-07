@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon",
+    "dev": "nodemon --exec ts-node src/index.ts",
     "start": "node ./src/index.ts",
     "db:generate": "drizzle-kit generate --config=./src/config/drizzle.config.ts",
     "db:delete": "drizzle-kit drop --config=./src/config/drizzle.config.ts",
@@ -30,9 +30,9 @@
     "express": "^4.21.0",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.13.0",
-    "postgres": "^3.4.4",
     "typedocs": "^0.6.7",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "postgres": "^3.4.4"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.5",

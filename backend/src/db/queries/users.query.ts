@@ -1,10 +1,10 @@
-import db from "config/db";
-import log from "config/log.config";
-import { users } from "db/schema";
-import { UsersSchema } from "db/schema/users.schema";
+import db from "../../config/db";
+import log from "../../config/log.config";
+import { users } from "../../db/schema";
+import { UsersSchema } from "../../db/schema/users.schema";
 import { eq } from "drizzle-orm";
-import { getErrorMessage } from "utils/errorHandler";
-import { DatabaseRequestError } from "utils/errorTypes";
+import { getErrorMessage } from "../../utils/errorHandler";
+import { DatabaseRequestError } from "../../utils/errorTypes";
 
 const NAMESPACE = "Users-Query";
 

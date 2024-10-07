@@ -1,6 +1,7 @@
 import { Request, Router } from "express";
 import handler from "../handlers/users"
-import { routerEnclose } from "utils/routerEnclose";
+import { routerEnclose } from "../../utils/routerEnclose";
+import { UsersSchema } from "db/schema/users.schema";
 
 const NAMESPACE = "Users-Route";
 
@@ -15,5 +16,6 @@ const formatCreateUserRequest = (req: Request) => {
 
 userRouter.post('/create', routerEnclose(handler.createNewUser, formatCreateUserRequest));
 
+userRouter.get('/', routerEnclose(handler.getUserByName, formatCreateUserRequest));
 
 export default userRouter

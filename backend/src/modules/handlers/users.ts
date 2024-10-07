@@ -1,10 +1,10 @@
-import { users, UsersSchema } from "db/schema/users.schema";
+import { users, UsersSchema } from "../../db/schema/users.schema";
 import log from "./../../config/log.config"
-import { getErrorMessage, getErrorName } from "utils/errorHandler";
-import db from "config/db";
-import { DatabaseRequestError } from "utils/errorTypes";
+import { getErrorMessage, getErrorName } from "../../utils/errorHandler";
+import db from "../../config/db";
+import { DatabaseRequestError } from "../../utils/errorTypes";
 import { eq, sql } from "drizzle-orm";
-import { queryGetAllUsers, queryGetUserByName } from "db/queries/users.query";
+import { queryGetAllUsers, queryGetUserByName } from "../../db/queries/users.query";
 
 const NAMESPACE = "Users-Route";
 
@@ -19,7 +19,7 @@ const createNewUser: eventHandler = async (event) => {
     const user: UsersSchema = event.payload as UsersSchema;
     
     try {
-        const usersInDB = await db
+        const userInDB = await db
             .insert(users)
             .values(user)
             .returning()
@@ -29,17 +29,21 @@ const createNewUser: eventHandler = async (event) => {
                 throw e;
             });
         
-        if (usersInDB.length.valueOf() == 0) {
+        if (userInDB.length.valueOf() == 0) {
             log.error(
                 NAMESPACE,
                 'Database query failed to retrieve user(s)! User array retrieved: ',
-                usersInDB
+                userInDB
                 );
                 const e = new DatabaseRequestError(
                     'User has not been added to database',
                     '501'
                 );
                 throw e;
+        }
+        return {
+            statusCode: 200,
+            data: userInDB
         }
     } catch (error) {
         log.error(NAMESPACE, getErrorMessage(error), error);
