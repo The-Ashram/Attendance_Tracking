@@ -59,7 +59,7 @@ const formatDeleteUserById = (req: Request) => {
   };
 };
 
-userRouter.post('/create', routerEnclose(handler.createNewUser, formatCreateUserRequest));
+userRouter.post('/register', routerEnclose(handler.createNewUser, formatCreateUserRequest));
 userRouter.get('/', routerEnclose(handler.getUsers, formatGetAllUsersRequest));
 userRouter.get('/:id', routerEnclose(handler.getUsers, formatGetUserById));
 userRouter.patch('/:id', routerEnclose(handler.updateUser, formatUpdateUserRequest));

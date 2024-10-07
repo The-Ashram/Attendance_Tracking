@@ -24,7 +24,7 @@ app.use(cors({
 app.use(compression());
 app.use(cookieParser());
 app.use(bodyParser.json());
-app.use('/user', userRouter);
+app.use('/api/user', userRouter);
 
 
 const server = http.createServer(app)
@@ -35,6 +35,6 @@ server.listen(port, () => {
 
 
 app.get('/', (req, res) => {
-  res.send('Hello, TypeScript with Express!');
+  res.send('Hello, backend server is now live!');
 });
 
