@@ -6,6 +6,7 @@ import compression from 'compression';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import db from './config/db';
 
 const app = express();
 const port = process.env.PORT || '8080';
@@ -34,3 +35,4 @@ server.listen(port, () => {
 app.get('/', (req, res) => {
   res.send('Hello, TypeScript with Express!');
 });
+

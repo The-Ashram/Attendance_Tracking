@@ -21,10 +21,11 @@ export const statusEnum = pgEnum(
 
 export const attendance = pgTable('attendance', {
     id: serial('id').primaryKey(),
-    userId: uuid('user_id').notNull().references(() => users.id),
+    userId: uuid('user_id').references(() => users.id).notNull(),
     eventId: integer('event_id').references(() => events.id),                               // Nullable for daily attendance
     attendanceDate: date('attendance_date').notNull(),
     status: varchar('status', { length: 100 }).notNull(),                                   //  'Present' or 'Absent'
+    reason: varchar('reason'),
     checkInTime: timestamp('check_in_time'),
     checkOutTime: timestamp('check_out_time'),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
