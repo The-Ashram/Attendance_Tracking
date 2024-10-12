@@ -66,8 +66,7 @@ const formatDeleteUserById = (req: Request) => {
   };
 };
 
-// backend/src/modules/routes/users-routes.ts
-userRouter.post("/login", routerEnclose(handler.loginUser, formatLoginRequest));
+
 
 userRouter.post(
   "/register",

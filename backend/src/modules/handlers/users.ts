@@ -16,10 +16,11 @@ import {
   PayloadWithId,
   PayloadWithIdUpdate,
 } from "../interfaces/users.interfaces";
-import { generateToken } from "../../utils/jwt";
 import { comparePassword } from "../../utils/hashing";
 import { LoginRequestBody } from "../interfaces/users.interfaces";
 import bcrypt from "bcrypt";
+import config from "../../config/config";
+import { generateToken } from "../../utils/jwt";
 
 const NAMESPACE = "Users-Handler";
 
@@ -29,61 +30,6 @@ type event = {
 };
 
 type eventHandler = (event: event) => Object;
-const loginUser: eventHandler = async (event) => {
-  const { email, password } = event.payload as LoginRequestBody;
-
-  if (!email || !password) {
-    log.error(NAMESPACE, "Email and password are required ");
-    const e = new DatabaseRequestError(
-      "Email and password are required",
-      "400"
-    );
-    throw e;
-  }
-
-  try {
-    const usersResult = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, email))
-      .limit(1);
-
-    const user = usersResult[0];
-
-    if (!user) {
-      log.error(NAMESPACE, "Invalid user ");
-      const e = new DatabaseRequestError("Invalid user", "401");
-      throw e;
-    }
-
-    const isPasswordValid = await comparePassword(password, user.password);
-
-    if (!isPasswordValid) {
-      log.error(NAMESPACE, "Invalid password ");
-      const e = new DatabaseRequestError("Invalid password", "401");
-      throw e;
-    }
-
-    // Generate JWT token
-    const token = generateToken({ id: user.id, email: user.email });
-
-    return {
-      statusCode: 200,
-      data: {
-        message: "Login successful",
-        user: user,
-      },
-    };
-  } catch (error) {
-    log.error(NAMESPACE, getErrorMessage(error), error);
-    const code = parseInt(getErrorName(error));
-    const errorCode = code || 400;
-    return {
-      statusCode: errorCode,
-      error: new Error("Get user(s) request failed."),
-    };
-  }
-};
 
 const createNewUser: eventHandler = async (event) => {
   const user: UsersSchema = event.payload as UsersSchema;
@@ -192,5 +138,4 @@ export default {
   getUsers,
   updateUser,
   deleteUsers,
-  loginUser,
 };

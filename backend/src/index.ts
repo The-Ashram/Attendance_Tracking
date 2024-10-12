@@ -1,17 +1,18 @@
-import express from 'express';
-import http from 'http';
-import bodyParser from 'body-parser';
-import cookieParser from 'cookie-parser';
-import compression from 'compression';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import path from 'path';
-import userRouter from './modules/routes/users-routes';
+import express from "express";
+import http from "http";
+import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
+import compression from "compression";
+import cors from "cors";
+import dotenv from "dotenv";
+import path from "path";
+import userRouter from "./modules/routes/users-routes";
 import asyncHandler from "express-async-handler";
 import { generateToken } from "./utils/jwt";
 import db from "./config/db";
 import { users } from "./db/schema";
 import { comparePassword } from "./utils/hashing";
+import authRouter from "./modules/routes/auth-routes";
 
 dotenv.config({
   path: path.join(__dirname, "./../.env"),
@@ -30,7 +31,8 @@ app.use(
 app.use(compression());
 app.use(cookieParser());
 app.use(bodyParser.json());
-app.use('/api/user', userRouter);
+app.use("/api/user", userRouter);
+app.use("/api/auth", authRouter);
 
 const server = http.createServer(app);
 
@@ -38,7 +40,6 @@ server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
 
-
-app.get('/', (req, res) => {
-  res.send('Hello, backend server is now live!');
+app.get("/", (req, res) => {
+  res.send("Hello, backend server is now live!");
 });
