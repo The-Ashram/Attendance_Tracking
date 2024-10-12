@@ -8,11 +8,12 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "dist",
-    "baseUrl": "src",
+    "baseUrl": "backend/src",
     "sourceMap": true,
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "typeRoots": ["./node_modules/@types", "./src/types"]
 
   },
-  "include": ["src/**/*", "index.ts"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules"]
 }
