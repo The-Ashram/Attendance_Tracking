@@ -6,18 +6,7 @@ import compression from 'compression';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
-import db from './config/db';
 import userRouter from './modules/routes/users-routes';
-
-// Your other imports
-import express, { Request, Response } from "express";
-import http from "http";
-import bodyParser from "body-parser";
-import cookieParser from "cookie-parser";
-import compression from "compression";
-import cors from "cors";
-import dotenv from "dotenv";
-import path from "path";
 import asyncHandler from "express-async-handler";
 import { generateToken } from "./utils/jwt";
 import db from "./config/db";
