@@ -1,69 +1,91 @@
 import { Request, Router } from "express";
-import handler from "../handlers/users"
+import handler from "../handlers/users";
 import { routerEnclose } from "../../utils/routerEnclose";
-import { UsersSchema } from "db/schema/users.schema";
+import { UsersSchema } from "../../db/schema/users.schema";
 
 const NAMESPACE = "Users-Route";
 
 const userRouter = Router();
 
+// backend/src/modules/routes/users-routes.ts
+const formatLoginRequest = (req: Request) => {
+  return {
+    source: "login",
+    payload: req.body,
+  };
+};
+
 const formatCreateUserRequest = (req: Request) => {
   return {
-      source: "createUser",
-      payload: req.body,
+    source: "createUser",
+    payload: req.body,
   };
 };
 
 const formatGetUserById = (req: Request) => {
   return {
-      source: "getUserByName",
-      payload: {
-        id: req.params.id,
-        data: req.body
-      }
+    source: "getUserByName",
+    payload: {
+      id: req.params.id,
+      data: req.body,
+    },
   };
 };
 
 const formatGetAllUsersRequest = (req: Request) => {
   return {
-      source: "getAllUsers",
-      payload: req.body,
+    source: "getAllUsers",
+    payload: req.body,
   };
 };
 
-
 const formatUpdateUserRequest = (req: Request) => {
   return {
-      source: "updateUser",
-      payload: {
-        id: req.params.id,
-        updateData: req.body
-      }
+    source: "updateUser",
+    payload: {
+      id: req.params.id,
+      updateData: req.body,
+    },
   };
 };
 
 const formatDeleteAllUsersRequest = (req: Request) => {
   return {
-      source: "deleteAllUsers",
-      payload: req.body,
+    source: "deleteAllUsers",
+    payload: req.body,
   };
 };
 
 const formatDeleteUserById = (req: Request) => {
   return {
-      source: "deleteUser",
-      payload: {
-        id: req.params.id,
-        data: req.body
-      }
+    source: "deleteUser",
+    payload: {
+      id: req.params.id,
+      data: req.body,
+    },
   };
 };
 
-userRouter.post('/register', routerEnclose(handler.createNewUser, formatCreateUserRequest));
-userRouter.get('/', routerEnclose(handler.getUsers, formatGetAllUsersRequest));
-userRouter.get('/:id', routerEnclose(handler.getUsers, formatGetUserById));
-userRouter.patch('/:id', routerEnclose(handler.updateUser, formatUpdateUserRequest));
-userRouter.delete('/', routerEnclose(handler.deleteUsers, formatDeleteAllUsersRequest));
-userRouter.delete('/:id', routerEnclose(handler.deleteUsers, formatDeleteUserById));
+// backend/src/modules/routes/users-routes.ts
+userRouter.post("/login", routerEnclose(handler.loginUser, formatLoginRequest));
 
-export default userRouter
+userRouter.post(
+  "/register",
+  routerEnclose(handler.createNewUser, formatCreateUserRequest)
+);
+userRouter.get("/", routerEnclose(handler.getUsers, formatGetAllUsersRequest));
+userRouter.get("/:id", routerEnclose(handler.getUsers, formatGetUserById));
+userRouter.patch(
+  "/:id",
+  routerEnclose(handler.updateUser, formatUpdateUserRequest)
+);
+userRouter.delete(
+  "/",
+  routerEnclose(handler.deleteUsers, formatDeleteAllUsersRequest)
+);
+userRouter.delete(
+  "/:id",
+  routerEnclose(handler.deleteUsers, formatDeleteUserById)
+);
+
+export default userRouter;

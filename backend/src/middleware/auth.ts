@@ -1,6 +1,7 @@
 // middleware/auth.ts
 import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../utils/jwt";
+import { User } from "../modules/interfaces/users.interfaces";
 
 export const authMiddleware = (
   req: Request,
@@ -21,6 +22,7 @@ export const authMiddleware = (
     return;
   }
 
-  req.user = decoded;
+  (req as any).user = decoded as User;
+  next();
   next();
 };

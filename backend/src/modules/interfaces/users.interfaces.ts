@@ -1,6 +1,19 @@
-import { UsersSchema } from "db/schema/users.schema";
+import { UsersSchema } from "../../db/schema/users.schema";
 import { JwtPayload } from "jsonwebtoken";
 
+// backend/src/modules/interfaces/users.interfaces.ts
+export interface LoginRequestBody {
+  email: string;
+  password: string;
+}
+
+// types/User.ts
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  // Add other fields as per your schema
+}
 interface PayloadWithData {
   data: JwtPayload;
 }
@@ -30,5 +43,5 @@ export {
   PayloadWithIdData,
   PayloadWithIdDataBody,
   PayloadWithId,
-  PayloadWithIdUpdate
-}
+  PayloadWithIdUpdate,
+};
