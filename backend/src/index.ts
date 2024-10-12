@@ -1,5 +1,13 @@
-// Import necessary functions and types from drizzle-orm
-import { eq } from "drizzle-orm";
+import express from 'express';
+import http from 'http';
+import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
+import compression from 'compression';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import path from 'path';
+import db from './config/db';
+import userRouter from './modules/routes/users-routes';
 
 // Your other imports
 import express, { Request, Response } from "express";
@@ -33,6 +41,7 @@ app.use(
 app.use(compression());
 app.use(cookieParser());
 app.use(bodyParser.json());
+app.use('/api/user', userRouter);
 
 app.post(
   "/login",
@@ -83,6 +92,7 @@ server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello, TypeScript with Express!");
+
+app.get('/', (req, res) => {
+  res.send('Hello, backend server is now live!');
 });

@@ -11,6 +11,8 @@ import {
 import { users } from "./users.schema";
 import { events } from "./events.schema";
 import { relations } from "drizzle-orm";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
 
 export const statusEnum = pgEnum(
     'attendance_status',
@@ -40,3 +42,6 @@ export const attendanceRelations = relations(attendance, ({ one, many }) => ({
         references: [events.id]
     })
 }));
+
+export const attendanceSchema = createInsertSchema(attendance);
+export type AttendanceSchema = z.infer<typeof attendanceSchema>
