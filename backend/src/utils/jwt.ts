@@ -1,6 +1,5 @@
-import { access } from "fs";
 // utils/jwt.ts
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import config from "../config/config";
 import log from "../config/log.config";
 import { AuthenticationError } from "./errorTypes";
@@ -13,28 +12,29 @@ const NAMESPACE = "JWT-UTILS";
 export const generateToken = (payload: object, secret: string): string => {
   try {
     const token = jwt.sign(payload, secret, {
+      algorithm: "RS256",
       expiresIn: "1h",
     });
     return token;
   } catch (error) {
     log.error(NAMESPACE, getErrorMessage(error), error);
-    throw new AuthenticationError("Error while signing in", "401");
+    throw new AuthenticationError("JWT token generation failed.", "401");
   }
 };
 
-const isJwtPayload = (payload: string | JwtPayload): payload is JwtPayload => {
-  return (payload as JwtPayload).exp !== undefined;
-};
-
 export const verifyAccessToken = async (token: string) => {
-  const tokenuse = Buffer.from(
+  const tokenUsed = Buffer.from(
     config.server.access_public_secret,
     "base64"
   ).toString("ascii");
 
-  jwt.verify(token, tokenuse, (error) => {
+  jwt.verify(token, tokenUsed, (error) => {
     if (error) {
-      const e = new AuthenticationError("JWT failed.", "403");
+      log.error(NAMESPACE, getErrorMessage(error), error);
+      const e = new AuthenticationError(
+        "JWT access token verification failed.",
+        "403"
+      );
       throw e;
     }
   });
@@ -55,13 +55,18 @@ export const verifyAccessToken = async (token: string) => {
 };
 
 export const verifyRefreshToken = async (token: string) => {
-  const tokenuse = Buffer.from(
+  const tokenUsed = Buffer.from(
     config.server.refresh_public_secret,
     "base64"
   ).toString("ascii");
-  jwt.verify(token, tokenuse, (error) => {
+  jwt.verify(token, tokenUsed, (error) => {
     if (error) {
-      throw error;
+      log.error(NAMESPACE, getErrorMessage(error), error);
+      const e = new AuthenticationError(
+        "JWT access token verification failed.",
+        "403"
+      );
+      throw e;
     }
   });
   const decoded = jwt.decode(token) as DecodedJWTObj;

@@ -7,11 +7,6 @@ import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
 import userRouter from "./modules/routes/users-routes";
-import asyncHandler from "express-async-handler";
-import { generateToken } from "./utils/jwt";
-import db from "./config/db";
-import { users } from "./db/schema";
-import { comparePassword } from "./utils/hashing";
 import authRouter from "./modules/routes/auth-routes";
 
 dotenv.config({

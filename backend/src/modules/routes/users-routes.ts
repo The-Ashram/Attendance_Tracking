@@ -1,26 +1,8 @@
 import { Request, Router } from "express";
 import handler from "../handlers/users";
 import { routerEnclose } from "../../utils/routerEnclose";
-import { UsersSchema } from "../../db/schema/users.schema";
-
-const NAMESPACE = "Users-Route";
 
 const userRouter = Router();
-
-// backend/src/modules/routes/users-routes.ts
-const formatLoginRequest = (req: Request) => {
-  return {
-    source: "login",
-    payload: req.body,
-  };
-};
-
-const formatCreateUserRequest = (req: Request) => {
-  return {
-    source: "createUser",
-    payload: req.body,
-  };
-};
 
 const formatGetUserById = (req: Request) => {
   return {
@@ -66,12 +48,6 @@ const formatDeleteUserById = (req: Request) => {
   };
 };
 
-
-
-userRouter.post(
-  "/register",
-  routerEnclose(handler.createNewUser, formatCreateUserRequest)
-);
 userRouter.get("/", routerEnclose(handler.getUsers, formatGetAllUsersRequest));
 userRouter.get("/:id", routerEnclose(handler.getUsers, formatGetUserById));
 userRouter.patch(

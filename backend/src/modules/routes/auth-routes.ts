@@ -4,14 +4,48 @@ import {
   routerEnclose,
   routerEncloseAuthentication,
 } from "../../utils/routerEnclose";
-import { extractBothJWT, extractRefreshJWT } from "../../middleware/auth";
+import { authenticateBothJWT, authenticateRefreshJWT } from "../../middleware/auth";
 import { DecodedJWTObj } from "../interfaces/auth.interfaces";
-
-const NAMESPACE = "Auth-Route";
 
 const authRouter = Router();
 
-// backend/src/modules/routes/users-routes.ts
+const formatValidateAuthRequest = (req: Request) => {
+  const accessToken: string | undefined =
+    req.headers.authorization?.split(" ")[1];
+  const refreshToken: string | undefined =
+    req.headers.authorization?.split(" ")[2];
+  return {
+    source: "express",
+    payload: {
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    },
+  };
+};
+
+const formatValidateRequest = (req: Request) => ({
+  source: "express",
+  payload: req.body.data,
+});
+
+const formatRefreshAuthRequest = (req: Request) => {
+  const refreshToken = req.headers.authorization?.split(" ")[2];
+  return {
+    source: "express",
+    payload: {
+      refreshToken: refreshToken,
+    },
+  };
+};
+
+const formatRefreshRequest = (req: Request) => {
+  const body: DecodedJWTObj = req.body.data;
+  return {
+    source: "express",
+    payload: body,
+  };
+};
+
 const formatLoginRequest = (req: Request) => {
   return {
     source: "login",
@@ -19,48 +53,29 @@ const formatLoginRequest = (req: Request) => {
   };
 };
 
+const formatCreateUserRequest = (req: Request) => {
+  return {
+    source: "createUser",
+    payload: req.body,
+  };
+};
+
 authRouter.get(
   "/validate",
-  routerEncloseAuthentication(extractBothJWT, (req: Request) => {
-    const accessToken: string | undefined =
-      req.headers.authorization?.split(" ")[1];
-    const refreshToken: string | undefined =
-      req.headers.authorization?.split(" ")[2];
-    return {
-      source: "express",
-      payload: {
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-      },
-    };
-  }),
-  routerEnclose(handler.validateToken, (req: Request) => ({
-    source: "express",
-    payload: req.body.data,
-  }))
+  routerEncloseAuthentication(authenticateBothJWT, formatValidateAuthRequest),
+  routerEnclose(handler.validateToken, formatValidateRequest)
 );
 
 authRouter.get(
   "/refresh",
-  routerEncloseAuthentication(extractRefreshJWT, (req: Request) => {
-    const refreshToken = req.headers.authorization?.split(" ")[2];
-    return {
-      source: "express",
-      payload: {
-        refreshToken: refreshToken,
-      },
-    };
-  }),
-  routerEnclose(handler.refreshAccessToken, (req: Request) => {
-    const body: DecodedJWTObj = req.body.data;
-    return {
-      source: "express",
-      payload: body,
-    };
-  })
+  routerEncloseAuthentication(authenticateRefreshJWT, formatRefreshAuthRequest),
+  routerEnclose(handler.refreshAccessToken, formatRefreshRequest)
+);
+
+authRouter.post("/login", routerEnclose(handler.loginUser, formatLoginRequest));
+authRouter.post(
+  "/register",
+  routerEnclose(handler.registerNewUser, formatCreateUserRequest)
 );
 
 export default authRouter;
-
-// backend/src/modules/routes/users-routes.ts
-authRouter.post("/login", routerEnclose(handler.loginUser, formatLoginRequest));

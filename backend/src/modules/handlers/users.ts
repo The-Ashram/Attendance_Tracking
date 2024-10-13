@@ -1,11 +1,7 @@
-import { users, UsersSchema } from "../../db/schema/users.schema";
 import log from "./../../config/log.config";
 import { getErrorMessage, getErrorName } from "../../utils/errorHandler";
-import db from "../../config/db";
 import { DatabaseRequestError } from "../../utils/errorTypes";
-import { eq, sql } from "drizzle-orm";
 import {
-  queryCreateUser,
   queryDeleteAllUsers,
   queryDeleteUser,
   queryGetAllUsers,
@@ -16,11 +12,7 @@ import {
   PayloadWithId,
   PayloadWithIdUpdate,
 } from "../interfaces/users.interfaces";
-import { comparePassword } from "../../utils/hashing";
-import { LoginRequestBody } from "../interfaces/users.interfaces";
-import bcrypt from "bcrypt";
-import config from "../../config/config";
-import { generateToken } from "../../utils/jwt";
+
 
 const NAMESPACE = "Users-Handler";
 
@@ -30,31 +22,6 @@ type event = {
 };
 
 type eventHandler = (event: event) => Object;
-
-const createNewUser: eventHandler = async (event) => {
-  const user: UsersSchema = event.payload as UsersSchema;
-  user.password = await bcrypt.hash(user.password, 10);
-
-  try {
-    const userInDB = await queryCreateUser(user);
-    log.info(NAMESPACE, "---------END OF CREATE NEW USER PROCESS---------");
-    return {
-      statusCode: 201,
-      data: {
-        message: "User has been added to database.",
-        user: userInDB,
-      },
-    };
-  } catch (error) {
-    log.error(NAMESPACE, getErrorMessage(error), error);
-    const code = parseInt(getErrorName(error));
-    const errorCode = code == null ? 400 : code;
-    return {
-      statusCode: errorCode,
-      error: new Error("Create new user request failed."),
-    };
-  }
-};
 
 const getUsers: eventHandler = async (event) => {
   const { id } = event.payload as PayloadWithId;
@@ -134,7 +101,6 @@ const deleteUsers: eventHandler = async (event) => {
 };
 
 export default {
-  createNewUser,
   getUsers,
   updateUser,
   deleteUsers,
