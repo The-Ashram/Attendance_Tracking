@@ -1,10 +1,21 @@
 import { Request, Router } from "express";
 import handler from "../handlers/users";
-import { routerEnclose } from "../../utils/routerEnclose";
+import { routerEnclose, routerEncloseAuthentication } from "../../utils/routerEnclose";
+import { authenticateAccessJWT } from "../../middleware/auth";
 
 const userRouter = Router();
 
-const formatGetUserById = (req: Request) => {
+const formatAuthenticateRequest = (req: Request) => {
+  const accessToken: string | undefined = req.headers.authorization?.split(' ')[1];
+  return {
+    source: "express",
+    payload: {
+      accessToken: accessToken,
+    }
+  }
+};
+
+const formatGetUserByIdRequest = (req: Request) => {
   return {
     source: "getUserByName",
     payload: {
@@ -48,18 +59,33 @@ const formatDeleteUserById = (req: Request) => {
   };
 };
 
-userRouter.get("/", routerEnclose(handler.getUsers, formatGetAllUsersRequest));
-userRouter.get("/:id", routerEnclose(handler.getUsers, formatGetUserById));
+userRouter.get(
+  "/", 
+  routerEncloseAuthentication(authenticateAccessJWT, formatAuthenticateRequest),
+  routerEnclose(handler.getUsers, formatGetAllUsersRequest)
+);
+
+userRouter.get(
+  "/:id", 
+  routerEncloseAuthentication(authenticateAccessJWT, formatAuthenticateRequest),
+  routerEnclose(handler.getUsers, formatGetUserByIdRequest)
+);
+
 userRouter.patch(
   "/:id",
+  routerEncloseAuthentication(authenticateAccessJWT, formatAuthenticateRequest),
   routerEnclose(handler.updateUser, formatUpdateUserRequest)
 );
+
 userRouter.delete(
   "/",
+  routerEncloseAuthentication(authenticateAccessJWT, formatAuthenticateRequest),
   routerEnclose(handler.deleteUsers, formatDeleteAllUsersRequest)
 );
+
 userRouter.delete(
   "/:id",
+  routerEncloseAuthentication(authenticateAccessJWT, formatAuthenticateRequest),
   routerEnclose(handler.deleteUsers, formatDeleteUserById)
 );
 

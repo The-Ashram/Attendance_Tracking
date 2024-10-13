@@ -4,7 +4,7 @@ import {
   routerEnclose,
   routerEncloseAuthentication,
 } from "../../utils/routerEnclose";
-import { authenticateBothJWT, authenticateRefreshJWT } from "../../middleware/auth";
+import { authenticateAccessJWT, authenticateBothJWT, authenticateRefreshJWT } from "../../middleware/auth";
 import { DecodedJWTObj } from "../interfaces/auth.interfaces";
 
 const authRouter = Router();
@@ -53,10 +53,20 @@ const formatLoginRequest = (req: Request) => {
   };
 };
 
-const formatCreateUserRequest = (req: Request) => {
+const formatRegisterUserRequest = (req: Request) => {
   return {
     source: "createUser",
     payload: req.body,
+  };
+};
+
+const formatAccessAuthRequest = (req: Request) => {
+  const accessToken = req.headers.authorization?.split(" ")[1];
+  return {
+    source: "express",
+    payload: {
+      accessToken: accessToken,
+    },
   };
 };
 
@@ -72,10 +82,15 @@ authRouter.get(
   routerEnclose(handler.refreshAccessToken, formatRefreshRequest)
 );
 
-authRouter.post("/login", routerEnclose(handler.loginUser, formatLoginRequest));
+authRouter.post(
+  "/login", 
+  routerEnclose(handler.loginUser, formatLoginRequest)
+);
+
 authRouter.post(
   "/register",
-  routerEnclose(handler.registerNewUser, formatCreateUserRequest)
+  routerEncloseAuthentication(authenticateAccessJWT, formatAccessAuthRequest),
+  routerEnclose(handler.registerNewUser, formatRegisterUserRequest)
 );
 
 export default authRouter;

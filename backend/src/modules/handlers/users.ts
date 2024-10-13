@@ -12,6 +12,7 @@ import {
   PayloadWithId,
   PayloadWithIdUpdate,
 } from "../interfaces/users.interfaces";
+import { hashPassword } from "../../utils/hashing";
 
 
 const NAMESPACE = "Users-Handler";
@@ -50,8 +51,10 @@ const getUsers: eventHandler = async (event) => {
 
 const updateUser: eventHandler = async (event) => {
   const { id, updateData } = event.payload as PayloadWithIdUpdate;
-
   try {
+    if (updateData.password) {
+      updateData.password = await hashPassword(updateData.password);
+    }
     if (id == null) {
       throw new DatabaseRequestError("User id cannot be null.", "400");
     }

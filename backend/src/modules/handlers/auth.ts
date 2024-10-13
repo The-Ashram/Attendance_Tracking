@@ -39,7 +39,12 @@ const refreshAccessToken: eventHandler = async (event) => {
       config.server.access_private_secret,
       "base64"
     ).toString("ascii");
-    const accessToken = generateToken(userRequested[0], accessPrivateKey);
+
+    const accessToken = generateToken(
+      userRequested[0], 
+      accessPrivateKey,
+      "accessToken"
+    );
     log.info(
       NAMESPACE,
       "---------END OF ACCESS TOKEN REFRESH PROCESS---------"
@@ -110,11 +115,13 @@ export const loginUser: eventHandler = async (event) => {
 
     const accessToken = generateToken(
       { id: user.id, email: user.email, role: user.role },
-      accessPrivateKey
+      accessPrivateKey,
+      "accessToken"
     );
     const refreshToken = generateToken(
       { id: user.id, email: user.email, role: user.role },
-      refreshPrivateKey
+      refreshPrivateKey,
+      "refreshToken"
     );
 
     return {
@@ -132,7 +139,7 @@ export const loginUser: eventHandler = async (event) => {
     const errorCode = code || 400;
     return {
       statusCode: errorCode,
-      error: new Error("Get user(s) request failed."),
+      error: new Error("Login unsuccessful."),
     };
   }
 };

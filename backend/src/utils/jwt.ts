@@ -9,11 +9,23 @@ import { getErrorMessage } from "./errorHandler";
 
 const NAMESPACE = "JWT-UTILS";
 
-export const generateToken = (payload: object, secret: string): string => {
+export const generateToken = (payload: object, secret: string, tokenType: string): string => {
   try {
+    let expireTime;
+    if (tokenType == "accessToken") {
+      expireTime = "1h";
+    } else if (tokenType == "refreshToken") {
+      expireTime = "12h";
+    } else {
+      const e = new AuthenticationError(
+        "Invalid tokenType provided. Must be 'accessToken' or 'refreshToken'.",
+        "400"
+      );
+      throw e;
+    }
     const token = jwt.sign(payload, secret, {
       algorithm: "RS256",
-      expiresIn: "1h",
+      expiresIn: expireTime,
     });
     return token;
   } catch (error) {
