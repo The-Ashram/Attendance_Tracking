@@ -11,7 +11,7 @@ import {
 import { users, UsersSchema } from "../../db/schema/users.schema";
 import { eq, sql } from "drizzle-orm";
 import db from "../../config/db";
-import { comparePassword } from "../../utils/hashing";
+import { comparePassword, hashPassword } from "../../utils/hashing";
 import { DecodedJWTObj } from "../interfaces/auth.interfaces";
 import bcrypt from 'bcrypt';
 
@@ -146,7 +146,7 @@ export const loginUser: eventHandler = async (event) => {
 
 const registerNewUser: eventHandler = async (event) => {
   const user: UsersSchema = event.payload as UsersSchema;
-  user.password = await bcrypt.hash(user.password, 10);
+  user.password = await hashPassword(user.password);
 
 
   try {

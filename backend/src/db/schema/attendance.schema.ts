@@ -16,7 +16,7 @@ import { z } from "zod";
 
 export const statusEnum = pgEnum(
     'attendance_status',
-    ['Present', 'Absent']
+    ['In', 'Out']
 );
 
 export const attendance = pgTable('attendance', {
@@ -26,6 +26,8 @@ export const attendance = pgTable('attendance', {
     attendanceDate: date('attendance_date').notNull(),
     status: varchar('status', { length: 100 }).notNull(),                                   //  'Present' or 'Absent'
     reason: varchar('reason'),
+    verifiedBy: varchar('verified_by'),
+    remarks: varchar('remarks'),
     checkInTime: timestamp('check_in_time'),
     checkOutTime: timestamp('check_out_time'),
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
