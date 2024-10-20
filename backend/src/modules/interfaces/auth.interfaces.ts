@@ -1,12 +1,12 @@
 import { JwtPayload } from "jsonwebtoken";
 
-type roles = "admin" | "user";
+type Roles = "admin" | "user" | "resident";
 
 export interface DecodedJWTObj extends JwtPayload {
   id: string;
   name: string;
   email: string;
-  role: roles;
+  role: Roles;
   iat: number;
   exp: number;
   iss: string;

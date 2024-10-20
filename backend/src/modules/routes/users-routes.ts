@@ -17,7 +17,7 @@ const formatAuthenticateRequest = (req: Request) => {
 
 const formatGetUserByIdRequest = (req: Request) => {
   return {
-    source: "getUserByName",
+    source: "express",
     payload: {
       id: req.params.id,
       data: req.body,
@@ -27,14 +27,14 @@ const formatGetUserByIdRequest = (req: Request) => {
 
 const formatGetAllUsersRequest = (req: Request) => {
   return {
-    source: "getAllUsers",
+    source: "express",
     payload: req.body,
   };
 };
 
 const formatUpdateUserRequest = (req: Request) => {
   return {
-    source: "updateUser",
+    source: "express",
     payload: {
       id: req.params.id,
       updateData: req.body,
@@ -44,14 +44,14 @@ const formatUpdateUserRequest = (req: Request) => {
 
 const formatDeleteAllUsersRequest = (req: Request) => {
   return {
-    source: "deleteAllUsers",
+    source: "express",
     payload: req.body,
   };
 };
 
 const formatDeleteUserById = (req: Request) => {
   return {
-    source: "deleteUser",
+    source: "express",
     payload: {
       id: req.params.id,
       data: req.body,
@@ -71,6 +71,7 @@ userRouter.get(
   routerEnclose(handler.getUsers, formatGetUserByIdRequest)
 );
 
+// For update queries must add updatedAt field with current timestamp to update database
 userRouter.patch(
   "/:id",
   routerEncloseAuthentication(authenticateAccessJWT, formatAuthenticateRequest),

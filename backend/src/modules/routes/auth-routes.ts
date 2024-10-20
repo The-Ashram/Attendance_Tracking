@@ -48,19 +48,19 @@ const formatRefreshRequest = (req: Request) => {
 
 const formatLoginRequest = (req: Request) => {
   return {
-    source: "login",
+    source: "express",
     payload: req.body,
   };
 };
 
 const formatRegisterUserRequest = (req: Request) => {
   return {
-    source: "createUser",
+    source: "express",
     payload: req.body,
   };
 };
 
-const formatAccessAuthRequest = (req: Request) => {
+const formatAuthenticateRequest = (req: Request) => {
   const accessToken = req.headers.authorization?.split(" ")[1];
   return {
     source: "express",
@@ -89,7 +89,7 @@ authRouter.post(
 
 authRouter.post(
   "/register",
-  routerEncloseAuthentication(authenticateAccessJWT, formatAccessAuthRequest),
+  routerEncloseAuthentication(authenticateAccessJWT, formatAuthenticateRequest),
   routerEnclose(handler.registerNewUser, formatRegisterUserRequest)
 );
 

@@ -9,11 +9,10 @@ import {
   queryUpdateUser,
 } from "../../db/queries/users.query";
 import {
-  PayloadWithId,
   PayloadWithIdUpdate,
 } from "../interfaces/users.interfaces";
+import { PayloadWithId } from "../interfaces/general.interfaces";
 import { hashPassword } from "../../utils/hashing";
-
 
 const NAMESPACE = "Users-Handler";
 

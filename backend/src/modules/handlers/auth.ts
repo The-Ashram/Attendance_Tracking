@@ -1,4 +1,4 @@
-import { queryCreateUser, queryGetUserById } from "./../../db/queries/users.query";
+import { queryCreateUser, queryGetUserByEmail, queryGetUserById } from "./../../db/queries/users.query";
 import { getErrorMessage, getErrorName } from "../../utils/errorHandler";
 import { generateToken } from "../../utils/jwt";
 import log from "./../../config/log.config";
@@ -8,12 +8,9 @@ import {
   BadUserRequestError,
   DatabaseRequestError,
 } from "../../utils/errorTypes";
-import { users, UsersSchema } from "../../db/schema/users.schema";
-import { eq, sql } from "drizzle-orm";
-import db from "../../config/db";
+import { UsersSchema } from "../../db/schema/users.schema";
 import { comparePassword, hashPassword } from "../../utils/hashing";
 import { DecodedJWTObj } from "../interfaces/auth.interfaces";
-import bcrypt from 'bcrypt';
 
 
 type event = {
@@ -81,19 +78,9 @@ export const loginUser: eventHandler = async (event) => {
       throw e;
     }
 
-    const usersResult = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, email))
-      .limit(1);
+    const usersResult = await queryGetUserByEmail(email);
 
     const user = usersResult[0];
-
-    if (!user) {
-      log.error(NAMESPACE, "Invalid user ");
-      const e = new DatabaseRequestError("Invalid user", "401");
-      throw e;
-    }
 
     const isPasswordValid = await comparePassword(password, user.password);
 
@@ -147,7 +134,6 @@ export const loginUser: eventHandler = async (event) => {
 const registerNewUser: eventHandler = async (event) => {
   const user: UsersSchema = event.payload as UsersSchema;
   user.password = await hashPassword(user.password);
-
 
   try {
     const userInDB = await queryCreateUser(user);

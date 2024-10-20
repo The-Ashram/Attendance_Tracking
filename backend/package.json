@@ -17,6 +17,7 @@
   "license": "ISC",
   "dependencies": {
     "@electric-sql/pglite": "^0.2.9",
+    "@types/luxon": "^3.4.2",
     "aws-sdk": "^2.1691.0",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
@@ -29,6 +30,7 @@
     "drizzle-zod": "^0.5.1",
     "express": "^4.21.0",
     "jsonwebtoken": "^9.0.2",
+    "luxon": "^3.5.0",
     "pg": "^8.13.0",
     "postgres": "^3.4.4",
     "typedocs": "^0.6.7",

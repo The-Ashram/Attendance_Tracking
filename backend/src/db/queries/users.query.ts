@@ -2,9 +2,10 @@ import db from "../../config/db";
 import log from "../../config/log.config";
 import { users } from "../../db/schema";
 import { UsersSchema } from "../../db/schema/users.schema";
-import { eq, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { getErrorMessage } from "../../utils/errorHandler";
 import { DatabaseRequestError } from "../../utils/errorTypes";
+import { DateTime } from "luxon";
 
 const NAMESPACE = "Users-Query";
 
@@ -21,7 +22,7 @@ export const queryCreateUser = async (user: UsersSchema) => {
     })
     .catch((error) => {
       log.error(NAMESPACE, getErrorMessage(error), error);
-      const e = new DatabaseRequestError("Database query error.", "501");
+      const e = new DatabaseRequestError("Database create user query error.", "501");
       throw e;
     });
 
@@ -46,7 +47,7 @@ export const queryGetAllUsers = async () => {
     .from(users)
     .catch((error) => {
       log.error(NAMESPACE, getErrorMessage(error), error);
-      const e = new DatabaseRequestError("Database query error.", "501");
+      const e = new DatabaseRequestError("Database get all users query error.", "501");
       throw e;
     });
 
@@ -70,7 +71,7 @@ export const queryGetUserById = async (id: string) => {
     .where(sql`${users.id} = ${id}`)
     .catch((error) => {
       log.error(NAMESPACE, getErrorMessage(error), error);
-      const e = new DatabaseRequestError("Database query error.", "501");
+      const e = new DatabaseRequestError("Database get user by id query error.", "501");
       throw e;
     });
 
@@ -87,6 +88,31 @@ export const queryGetUserById = async (id: string) => {
   return user;
 };
 
+export const queryGetUserByEmail = async (email: string) => {
+  const user = await db
+    .select()
+    .from(users)
+    .where(sql`${users.email} = ${email}`)
+    .limit(1)
+    .catch((error) => {
+      log.error(NAMESPACE, getErrorMessage(error), error);
+      const e = new DatabaseRequestError("Database get user by email query error.", "501");
+      throw e;
+    });
+
+  if (user.length.valueOf() === 0) {
+    log.error(
+      NAMESPACE,
+      `Database get user by email query failed for email: ${email}! User array retrieved: `,
+      user
+    );
+    const e = new DatabaseRequestError("User does not exist!", "404");
+    throw e;
+  }
+
+  return user;  
+};
+
 export const queryUpdateUser = async (
   id: string,
   user: Partial<UsersSchema>
@@ -101,10 +127,11 @@ export const queryUpdateUser = async (
       role: users.role,
       email: users.email,
       password: users.password,
+      updatedAt: users.updatedAt,
     })
     .catch((error) => {
       log.error(NAMESPACE, getErrorMessage(error), error);
-      const e = new DatabaseRequestError("Database query error.", "501");
+      const e = new DatabaseRequestError("Database update user query error.", "501");
       throw e;
     });
   log.info(NAMESPACE, "Updated user obj: ", updatedUser);
@@ -134,7 +161,7 @@ export const queryDeleteUser = async (id: string) => {
     })
     .catch((error) => {
       log.error(NAMESPACE, getErrorMessage(error), error);
-      const e = new DatabaseRequestError("Database query error.", "501");
+      const e = new DatabaseRequestError("Database delete user query error.", "501");
       throw e;
     });
 
@@ -163,7 +190,7 @@ export const queryDeleteAllUsers = async () => {
     })
     .catch((error) => {
       log.error(NAMESPACE, getErrorMessage(error), error);
-      const e = new DatabaseRequestError("Database query error.", "501");
+      const e = new DatabaseRequestError("Database delete all users query error.", "501");
       throw e;
     });
 
