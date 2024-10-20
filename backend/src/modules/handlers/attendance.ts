@@ -6,12 +6,13 @@ import {
   queryDeleteAllAttendances,
   queryDeleteAttendance,
   queryGetAllAttendances,
+  queryGetAttendanceByDay,
   queryGetAttendanceById,
   queryUpdateAttendance,
 } from "../../db/queries/attendance.query";
 import { PayloadWithId, PayloadWithIdData } from "../interfaces/general.interfaces";
 import { AttendanceSchema } from "../../db/schema/attendance.schema";
-import { PayloadWithDataCreateBody, PayloadWithIdUpdate } from "../interfaces/attendance.interfaces";
+import { PayloadWithDataCreateBody, PayloadWithIdDataDate, PayloadWithIdUpdate } from "../interfaces/attendance.interfaces";
 const NAMESPACE = "Attendance-Handler";
 
 type event = {
@@ -47,18 +48,21 @@ const createAttendance: eventHandler = async (event) => {
 }
 
 const getAttendances: eventHandler = async (event) => {
-  const { id, data } = event.payload as PayloadWithIdData;
+  const { id, jwtData, date } = event.payload as PayloadWithIdDataDate;
   try {
     const attendancesInDB =
-      id == null
-        ? await queryGetAllAttendances() : await queryGetAttendanceById(id);
+      id == null ? 
+        (date == null ? 
+          await queryGetAllAttendances() 
+          : await queryGetAttendanceByDay(date.toDateString()))
+        : await queryGetAttendanceById(id);
     log.info(NAMESPACE, "---------END OF GET ATTENDANCE(S) PROCESS---------");
     return {
       statusCode: 200,
       data: {
         message: "Attendance(s) have been retrieved.",
         attendances: attendancesInDB,
-        jwtData: data,
+        jwtData: jwtData,
       },
     };
   } catch (error) {

@@ -3,8 +3,6 @@ import handler from "../handlers/attendance";
 import { routerEnclose, routerEncloseAuthentication } from "../../utils/routerEnclose";
 import { authenticateAccessJWT } from "../../middleware/auth";
 import { DecodedJWTObj } from "../interfaces/auth.interfaces";
-import { Payload } from "aws-sdk/clients/iotdata";
-import { PayloadWithIdDataBody } from "../interfaces/general.interfaces";
 
 const attendanceRouter = Router();
 
@@ -29,19 +27,31 @@ const formatCreateRequest = (req: Request) => {
 };
 
 const formatGetAllAttendancesRequest = (req: Request) => {
+  let { date } = req.query;
+  let dateNew = null;
+  if (date) {
+    dateNew = new Date(date as string);
+  }
   return {
     source: "express",
     payload: {
-      data: req.body.data as DecodedJWTObj
+      date: dateNew ,
+      jwtData: req.body.data as DecodedJWTObj
     }
   };
 };
 
 const formatGetAttendanceByIdRequest = (req: Request) => {
+  const { date } = req.query;
+  let dateNew = null;
+  if (date) {
+    dateNew = new Date(date as string);
+  }
   return {
     source: "express",
     payload: {
       id: req.params.id,
+      date: dateNew,
       data: req.body.data as DecodedJWTObj,
     }
   };

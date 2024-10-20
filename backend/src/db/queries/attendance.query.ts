@@ -79,7 +79,7 @@ export const queryGetAttendanceById = async (attendanceId: string) => {
   }
 
   return attendanceRecord;
-}
+};
 
 export const queryGetAttendanceByUserId = async (userId: string) => {
   const attendanceRecord = await db
@@ -103,7 +103,31 @@ export const queryGetAttendanceByUserId = async (userId: string) => {
   }
 
   return attendanceRecord;
-}
+};
+
+export const queryGetAttendanceByDay = async (date: string) => {
+  const attendanceRecord = await db
+    .select()
+    .from(attendance)
+    .where(sql`${attendance.attendanceDate} = ${date}`)
+    .catch((error) => {
+      log.error(NAMESPACE, getErrorMessage(error), error);
+      const e = new DatabaseRequestError("Database query error.", "501");
+      throw e;
+    });
+
+  if (attendanceRecord.length.valueOf() === 0) {
+    log.error(
+      NAMESPACE,
+      `Database get attendance by date query failed to retrieve attendance for date ${date}! Attendance retrieved: `,
+      attendanceRecord
+    );
+    const e = new DatabaseRequestError("Attendance does not exist!", "404");
+    throw e;
+  }
+
+  return attendanceRecord;
+};
 
 export const queryUpdateAttendance = async ( 
   id: string, 
