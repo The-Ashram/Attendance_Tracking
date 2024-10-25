@@ -8,6 +8,7 @@ import {
   queryGetAllAttendances,
   queryGetAttendanceByDay,
   queryGetAttendanceById,
+  queryGetAttendanceByUserId,
   queryUpdateAttendance,
 } from "../../db/queries/attendance.query";
 import { PayloadWithId, PayloadWithIdData } from "../interfaces/general.interfaces";
@@ -55,7 +56,7 @@ const getAttendances: eventHandler = async (event) => {
         (date == null ? 
           await queryGetAllAttendances() 
           : await queryGetAttendanceByDay(date.toDateString()))
-        : await queryGetAttendanceById(id);
+        : await queryGetAttendanceByUserId(id);
     log.info(NAMESPACE, "---------END OF GET ATTENDANCE(S) PROCESS---------");
     return {
       statusCode: 200,
