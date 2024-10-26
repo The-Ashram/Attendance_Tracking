@@ -138,7 +138,7 @@ const registerNewUser: eventHandler = async (event) => {
 
   try {
     const userInDB = await queryCreateUser(createData);
-
+    let createdAttendance = null;
     // Create new attendance record
     if (userInDB[0].role == "resident") {
       const adminInDB = await queryGetUserByEmail(jwtData.email);
@@ -150,7 +150,7 @@ const registerNewUser: eventHandler = async (event) => {
         );
         throw e;
       }
-      const createdAttendance = await queryCreateAttendance({
+        createdAttendance = await queryCreateAttendance({
         status: "In",
         userId: userInDB[0].id,
         attendanceDate: new Date().toString(),
@@ -163,13 +163,24 @@ const registerNewUser: eventHandler = async (event) => {
     }
 
     log.info(NAMESPACE, "---------END OF CREATE NEW USER PROCESS---------");
-    return {
-      statusCode: 201,
-      data: {
-        message: "User has been added to database.",
-        user: userInDB,
-      },
-    };
+    if (createdAttendance) {
+      return {
+        statusCode: 201,
+        data: {
+          message: "User has been added to database.",
+          user: userInDB,
+          attendance: createdAttendance
+        },
+      };
+    } else {
+      return {
+        statusCode: 201,
+        data: {
+          message: "User has been added to database.",
+          user: userInDB
+        },
+      };
+    }
   } catch (error) {
     log.error(NAMESPACE, getErrorMessage(error), error);
     const code = parseInt(getErrorName(error));

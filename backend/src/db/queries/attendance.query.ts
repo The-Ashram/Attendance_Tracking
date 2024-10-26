@@ -1,4 +1,3 @@
-import { DateTime } from "luxon";
 import db from "../../config/db";
 import log from "../../config/log.config";
 import { attendance } from "../../db/schema";

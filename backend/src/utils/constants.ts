@@ -9,3 +9,6 @@ export const REGISTER_URL = `${BACKEND_API}/api/auth/register`;
 
 export const ALL_USERS_URL = `${BACKEND_API}/api/user/`;
 export const ONE_USER_URL = `${BACKEND_API}/api/user`;
+
+export const ALL_ATTENDANCES_URL = `${BACKEND_API}/api/attendance/`;
+export const ONE_ATTENDANCE_URL = `${BACKEND_API}/api/attendance`;

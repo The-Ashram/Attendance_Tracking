@@ -3,7 +3,7 @@ import { UsersSchema } from "../../db/schema/users.schema";
 
 type Roles = "admin" | "user" | "resident";
 
-export interface DecodedJWTObj extends JwtPayload {
+interface DecodedJWTObj extends JwtPayload {
   id: string;
   name: string;
   email: string;
@@ -13,12 +13,18 @@ export interface DecodedJWTObj extends JwtPayload {
   iss: string;
 }
 
-export interface extractJWTReq {
+interface extractJWTReq {
   accessToken?: string | undefined;
   refreshToken: string | undefined;
 }
 
-export interface PayloadWithDataCreateBody {
+interface PayloadWithDataCreateBody {
   jwtData: JwtPayload;
   createData: UsersSchema;
+}
+
+export {
+  DecodedJWTObj,
+  extractJWTReq,
+  PayloadWithDataCreateBody
 }

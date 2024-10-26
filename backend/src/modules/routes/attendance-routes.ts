@@ -3,9 +3,6 @@ import handler from "../handlers/attendance";
 import { routerEnclose, routerEncloseAuthentication } from "../../utils/routerEnclose";
 import { authenticateAccessJWT } from "../../middleware/auth";
 import { DecodedJWTObj } from "../interfaces/auth.interfaces";
-import log from "../../config/log.config";
-
-const NAMESPACE = "Attendance-Routes";
 
 const attendanceRouter = Router();
 

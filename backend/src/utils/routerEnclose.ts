@@ -4,7 +4,6 @@ import {
   DecodedJWTObj,
   extractJWTReq,
 } from "../modules/interfaces/auth.interfaces";
-import { getErrorMessage } from "./errorHandler";
 
 type routerEncloseFunction = (
   fn: Function,

@@ -5,7 +5,6 @@ import { UsersSchema } from "../../db/schema/users.schema";
 import { sql } from "drizzle-orm";
 import { getErrorMessage } from "../../utils/errorHandler";
 import { DatabaseRequestError } from "../../utils/errorTypes";
-import { DateTime } from "luxon";
 
 const NAMESPACE = "Users-Query";
 

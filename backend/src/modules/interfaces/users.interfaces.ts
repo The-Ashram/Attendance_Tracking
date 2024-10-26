@@ -23,4 +23,4 @@ export {
   User,
   LoginRequestBody,
   PayloadWithIdUpdate,
-};
+}
