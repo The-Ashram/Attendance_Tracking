@@ -7,13 +7,10 @@ import {
   queryDeleteAttendance,
   queryGetAllAttendances,
   queryGetAttendanceByDay,
-  queryGetAttendanceById,
   queryGetAttendanceByUserId,
   queryUpdateAttendance,
 } from "../../db/queries/attendance.query";
-import { PayloadWithId, PayloadWithIdData } from "../interfaces/general.interfaces";
-import { AttendanceSchema } from "../../db/schema/attendance.schema";
-import { PayloadWithDataCreateBody, PayloadWithIdDataDate, PayloadWithIdUpdate } from "../interfaces/attendance.interfaces";
+import { PayloadWithDataCreateBody, PayloadWithIdData, PayloadWithIdDataDate, PayloadWithIdUpdate } from "../interfaces/attendance.interfaces";
 const NAMESPACE = "Attendance-Handler";
 
 type event = {
@@ -105,7 +102,7 @@ const updateAttendance: eventHandler = async (event) => {
 };
 
 const deleteAttendances: eventHandler = async (event) => {
-  const { id, data } = event.payload as PayloadWithIdData;
+  const { id, jwtData } = event.payload as PayloadWithIdData;
   try {
     const deletedAttendances =
       id == null
@@ -117,7 +114,7 @@ const deleteAttendances: eventHandler = async (event) => {
       data: {
         message: "Attendances has been deleted.",
         attendances: deletedAttendances,
-        jwtData: data,
+        jwtData: jwtData,
       },
     };
   } catch (error) {

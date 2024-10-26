@@ -13,14 +13,21 @@ interface PayloadWithDataCreateBody {
   createData: AttendanceSchema;
 }
 
+interface PayloadWithIdData {
+  id: string;
+  jwtData: JwtPayload;
+}
+
 interface PayloadWithIdDataDate {
   id: string;
   date: Date | null;
   jwtData: JwtPayload;
+
 }
 
 export {
   PayloadWithIdUpdate,
   PayloadWithDataCreateBody,
   PayloadWithIdDataDate,
+  PayloadWithIdData,
 }

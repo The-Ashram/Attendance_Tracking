@@ -1,4 +1,5 @@
 import { JwtPayload } from "jsonwebtoken";
+import { UsersSchema } from "../../db/schema/users.schema";
 
 type Roles = "admin" | "user" | "resident";
 
@@ -15,4 +16,9 @@ export interface DecodedJWTObj extends JwtPayload {
 export interface extractJWTReq {
   accessToken?: string | undefined;
   refreshToken: string | undefined;
+}
+
+export interface PayloadWithDataCreateBody {
+  jwtData: JwtPayload;
+  createData: UsersSchema;
 }

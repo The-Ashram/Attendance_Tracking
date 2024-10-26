@@ -54,9 +54,13 @@ const formatLoginRequest = (req: Request) => {
 };
 
 const formatRegisterUserRequest = (req: Request) => {
+  const jwtData = req.body.data;
   return {
     source: "express",
-    payload: req.body,
+    payload: {
+      createData: req.body,
+      jwtData: jwtData,
+    },
   };
 };
 

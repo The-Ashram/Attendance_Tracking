@@ -3,6 +3,9 @@ import handler from "../handlers/attendance";
 import { routerEnclose, routerEncloseAuthentication } from "../../utils/routerEnclose";
 import { authenticateAccessJWT } from "../../middleware/auth";
 import { DecodedJWTObj } from "../interfaces/auth.interfaces";
+import log from "../../config/log.config";
+
+const NAMESPACE = "Attendance-Routes";
 
 const attendanceRouter = Router();
 
@@ -52,7 +55,7 @@ const formatGetAttendanceByIdRequest = (req: Request) => {
     payload: {
       id: req.params.id,
       date: dateNew,
-      data: req.body.data as DecodedJWTObj,
+      jwtData: req.body.data as DecodedJWTObj,
     }
   };
 };
@@ -72,7 +75,7 @@ const formatDeleteAllAttendancesRequest = (req: Request) => {
   return {
     source: "express",
     payload: {
-      data: req.body.data as DecodedJWTObj
+      jwtData: req.body.data as DecodedJWTObj
     }
   };
 };
@@ -82,7 +85,7 @@ const formatDeleteAttendanceByIdRequest = (req: Request) => {
     source: "express",
     payload: {
       id: req.params.id,
-      data: req.body.data as DecodedJWTObj
+      jwtData: req.body.data as DecodedJWTObj
     }
   };
 };

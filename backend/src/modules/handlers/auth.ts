@@ -10,7 +10,8 @@ import {
 } from "../../utils/errorTypes";
 import { UsersSchema } from "../../db/schema/users.schema";
 import { comparePassword, hashPassword } from "../../utils/hashing";
-import { DecodedJWTObj } from "../interfaces/auth.interfaces";
+import { DecodedJWTObj, PayloadWithDataCreateBody } from "../interfaces/auth.interfaces";
+import { queryCreateAttendance } from "../../db/queries/attendance.query";
 
 
 type event = {
@@ -132,11 +133,35 @@ export const loginUser: eventHandler = async (event) => {
 };
 
 const registerNewUser: eventHandler = async (event) => {
-  const user: UsersSchema = event.payload as UsersSchema;
-  user.password = await hashPassword(user.password);
+  const {createData, jwtData} = event.payload as PayloadWithDataCreateBody
+  createData.password = await hashPassword(createData.password);
 
   try {
-    const userInDB = await queryCreateUser(user);
+    const userInDB = await queryCreateUser(createData);
+
+    // Create new attendance record
+    if (userInDB[0].role == "resident") {
+      const adminInDB = await queryGetUserByEmail(jwtData.email);
+      if (adminInDB[0].employeeID == null || adminInDB[0].role == "resident") {
+        log.error(NAMESPACE, "Admin has no employee ID or is a resident.");
+        const e = new DatabaseRequestError(
+          "Admin has no employee ID or is a resident.",
+          "400"
+        );
+        throw e;
+      }
+      const createdAttendance = await queryCreateAttendance({
+        status: "In",
+        userId: userInDB[0].id,
+        attendanceDate: new Date().toString(),
+        verifiedBy: adminInDB[0].employeeID,
+      });
+      log.info(
+        NAMESPACE,
+        "---------NEW ATTENDANCE RECORD CREATED FOR RESIDENT---------"
+      );
+    }
+
     log.info(NAMESPACE, "---------END OF CREATE NEW USER PROCESS---------");
     return {
       statusCode: 201,

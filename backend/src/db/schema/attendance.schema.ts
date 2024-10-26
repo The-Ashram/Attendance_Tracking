@@ -21,8 +21,8 @@ export const statusEnum = pgEnum(
 
 export const attendance = pgTable('attendance', {
     id: serial('id').primaryKey(),
-    userId: uuid('user_id').references(() => users.id).notNull(),
-    eventId: integer('event_id').references(() => events.id),                               // Nullable for daily attendance
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+    eventId: integer('event_id').references(() => events.id, { onDelete: 'cascade' }),                               // Nullable for daily attendance
     attendanceDate: date('attendance_date').notNull(),
     status: varchar('status', { length: 100 }).notNull(),                                   //  'Present' or 'Absent'
     reason: varchar('reason'),
