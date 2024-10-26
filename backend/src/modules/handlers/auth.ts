@@ -1,4 +1,4 @@
-import { queryCreateUser, queryGetUserByEmail, queryGetUserById } from "./../../db/queries/users.query";
+import { queryCreateUser, queryDeleteUser, queryGetUserByEmail, queryGetUserById } from "./../../db/queries/users.query";
 import { getErrorMessage, getErrorName } from "../../utils/errorHandler";
 import { generateToken } from "../../utils/jwt";
 import log from "./../../config/log.config";
@@ -8,7 +8,6 @@ import {
   BadUserRequestError,
   DatabaseRequestError,
 } from "../../utils/errorTypes";
-import { UsersSchema } from "../../db/schema/users.schema";
 import { comparePassword, hashPassword } from "../../utils/hashing";
 import { DecodedJWTObj, PayloadWithDataCreateBody } from "../interfaces/auth.interfaces";
 import { queryCreateAttendance } from "../../db/queries/attendance.query";
@@ -150,11 +149,27 @@ const registerNewUser: eventHandler = async (event) => {
         );
         throw e;
       }
-        createdAttendance = await queryCreateAttendance({
-        status: "In",
-        userId: userInDB[0].id,
-        attendanceDate: new Date().toString(),
-        verifiedBy: adminInDB[0].employeeID,
+
+      const date = new Date().toDateString();
+      const time = new Date().toLocaleString("en-SG", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        second: "numeric",
+        hour12: false,
+        timeZone: "Asia/Singapore",
+      });
+      createdAttendance = await queryCreateAttendance({
+      status: "In",
+      userId: userInDB[0].id,
+      attendanceDate: date,
+      verifiedBy: adminInDB[0].employeeID,
+      checkInTime: time
+      }).catch(async (error) => {
+        await queryDeleteUser(userInDB[0].id);
+        throw error;
       });
       log.info(
         NAMESPACE,
