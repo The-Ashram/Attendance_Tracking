@@ -6,8 +6,7 @@ import {
     date, 
     uuid,
     varchar,
-    timestamp,
-    time
+    timestamp
 } from "drizzle-orm/pg-core";
 import { users } from "./users.schema";
 import { events } from "./events.schema";
@@ -28,7 +27,7 @@ export const attendance = pgTable('attendance', {
     status: varchar('status', { length: 100 }).notNull(),                                   //  'Present' or 'Absent'
     reason: varchar('reason'),
     verifiedBy: varchar('verified_by').notNull(),
-    returnBy: time('return_by'),
+    returnBy: timestamp('return_by'),
     remarks: varchar('remarks'),
     checkInTime: timestamp('check_in_time', { mode: 'string' }),
     checkOutTime: timestamp('check_out_time', { mode: 'string' }),
