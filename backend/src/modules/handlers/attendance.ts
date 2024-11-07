@@ -5,12 +5,14 @@ import {
   queryCreateAttendance,
   queryDeleteAllAttendances,
   queryDeleteAttendance,
+  queryExportAttendancesToCSV,
   queryGetAllAttendances,
   queryGetAttendanceByDay,
   queryGetAttendanceByUserId,
   queryUpdateAttendance,
 } from "../../db/queries/attendance.query";
 import { PayloadWithDataCreateBody, PayloadWithIdData, PayloadWithIdDataDate, PayloadWithIdUpdate } from "../interfaces/attendance.interfaces";
+import { uuid } from "drizzle-orm/pg-core";
 const NAMESPACE = "Attendance-Handler";
 
 type event = {
@@ -24,6 +26,7 @@ const createAttendance: eventHandler = async (event) => {
   const { createData, jwtData } = event.payload as PayloadWithDataCreateBody;
 
   try {
+
     const createdAttendance = await queryCreateAttendance(createData);
     log.info(NAMESPACE, "---------END OF CREATE ATTENDANCE PROCESS---------");
     return {
@@ -44,6 +47,32 @@ const createAttendance: eventHandler = async (event) => {
     };
   }
 }
+
+const exportAttendanceToCSV: eventHandler = async (event) => {
+  const { jwtData } = event.payload as PayloadWithIdData;
+  try {
+    const csvData = await queryExportAttendancesToCSV();
+
+    return {
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'text/csv',
+        'Content-Disposition': 'attachment; filename="attendance.csv"',
+      },
+      data: {
+        csvData: csvData,
+        jwtData: jwtData,
+      }
+    };
+  } catch (error) {
+    log.error(NAMESPACE, getErrorMessage(error), error);
+    const code = parseInt(getErrorName(error)) || 500;
+    return {
+      statusCode: code,
+      error: new Error("CSV export failed."),
+    };
+  }
+};
 
 const getAttendances: eventHandler = async (event) => {
   const { id, jwtData, date } = event.payload as PayloadWithIdDataDate;
@@ -129,7 +158,8 @@ const deleteAttendances: eventHandler = async (event) => {
 };
 
 export default {
-  createAttendance, 
+  createAttendance,
+  exportAttendanceToCSV, 
   getAttendances,
   updateAttendance,
   deleteAttendances

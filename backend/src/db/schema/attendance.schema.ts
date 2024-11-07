@@ -22,12 +22,13 @@ export const statusEnum = pgEnum(
 export const attendance = pgTable('attendance', {
     id: serial('id').primaryKey(),
     userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
-    eventId: integer('event_id').references(() => events.id, { onDelete: 'cascade' }),                               // Nullable for daily attendance
+    eventId: integer('event_id').references(() => events.id, { onDelete: 'cascade' }),      // Nullable for daily attendance
     attendanceDate: date('attendance_date').notNull(),
     status: varchar('status', { length: 100 }).notNull(),                                   //  'Present' or 'Absent'
     reason: varchar('reason'),
-    verifiedBy: varchar('verified_by').notNull(),
-    returnBy: timestamp('return_by'),
+    checkInVerifiedBy: varchar('check_in_verified_by'),
+    checkOutVerifiedBy: varchar('check_out_verified_by'),
+    returnBy: timestamp('return_by', { mode: 'string' }),
     remarks: varchar('remarks'),
     checkInTime: timestamp('check_in_time', { mode: 'string' }),
     checkOutTime: timestamp('check_out_time', { mode: 'string' }),
@@ -53,8 +54,6 @@ export const attendanceSchema = createInsertSchema(attendance, {
         schema.attendanceDate.min(1, { message: "Attendance Date must be provided!" }),
     status: (schema) =>
         schema.status.min(2, { message: "Status must be provided!" }),
-    verifiedBy: (schema) =>
-        schema.verifiedBy.min(4, { message: "VerifiedBy must be provided!" }),
 }).pick({
     id: true,
     userId: true,
@@ -63,7 +62,8 @@ export const attendanceSchema = createInsertSchema(attendance, {
     status: true,
     reason: true,
     remarks: true,
-    verifiedBy: true,
+    checkInVerifiedBy: true,
+    checkOutVerifiedBy: true,
     returnBy: true,
     checkInTime: true,
     checkOutTime: true

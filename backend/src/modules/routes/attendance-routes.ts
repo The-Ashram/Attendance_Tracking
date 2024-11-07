@@ -26,6 +26,16 @@ const formatCreateRequest = (req: Request) => {
   };
 };
 
+const formatExportCSVRequest = (req: Request) => {
+  return {
+    source: "express",
+    payload: {
+      createData: req.body,
+      jwtData: req.body.data
+    }
+  };
+};
+
 const formatGetAllAttendancesRequest = (req: Request) => {
   let { date } = req.query;
   let dateNew = null;
@@ -91,6 +101,12 @@ attendanceRouter.post(
   "/create",
   routerEncloseAuthentication(authenticateAccessJWT, formatAuthenticateRequest),
   routerEnclose(handler.createAttendance, formatCreateRequest)
+);
+
+attendanceRouter.get(
+  "/export-csv",
+  routerEncloseAuthentication(authenticateAccessJWT, formatAuthenticateRequest),
+  routerEnclose(handler.exportAttendanceToCSV, formatExportCSVRequest)
 );
 
 attendanceRouter.get(

@@ -165,7 +165,7 @@ const registerNewUser: eventHandler = async (event) => {
       status: "In",
       userId: userInDB[0].id,
       attendanceDate: date,
-      verifiedBy: adminInDB[0].employeeID,
+      checkInVerifiedBy: adminInDB[0].employeeID,
       checkInTime: time
       }).catch(async (error) => {
         await queryDeleteUser(userInDB[0].id);

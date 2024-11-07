@@ -13,6 +13,7 @@ type routerEncloseFunction = (
 type handlerReturnObject = {
   statusCode: number;
   data: Object;
+  headers?: { [key: string]: string }; 
   error: Error;
 };
 
@@ -43,7 +44,13 @@ export const routerEnclose: routerEncloseFunction =
           typeof returnObject
         );
         if (returnObject.statusCode >= 200 && returnObject.statusCode < 300) {
-          return res.status(returnObject.statusCode).json(returnObject.data);
+          if (returnObject.headers && returnObject.headers['Content-Type'] === 'text/csv') {
+            // If it's a CSV response, send it directly as text
+            return res.status(returnObject.statusCode).send(returnObject.data);
+          } else {
+            // Otherwise, send JSON data
+            return res.status(returnObject.statusCode).json(returnObject.data);
+          }
         } else {
           return res
             .status(returnObject.statusCode)

@@ -29,6 +29,7 @@
     "drizzle-orm": "^0.33.0",
     "drizzle-zod": "^0.5.1",
     "express": "^4.21.0",
+    "fast-csv": "^5.0.2",
     "jsonwebtoken": "^9.0.2",
     "luxon": "^3.5.0",
     "pg": "^8.13.0",

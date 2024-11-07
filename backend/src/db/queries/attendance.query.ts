@@ -4,11 +4,14 @@ import { attendance } from "../../db/schema";
 import { AttendanceSchema } from "../../db/schema/attendance.schema";
 import { getErrorMessage } from "../../utils/errorHandler";
 import { DatabaseRequestError } from "../../utils/errorTypes";
+import { writeToString } from 'fast-csv';
 import { sql } from "drizzle-orm";
+import { check } from "drizzle-orm/mysql-core";
 
 const NAMESPACE = "Attendance-Query";
 
 export const queryCreateAttendance = async (attendanceRecord: AttendanceSchema) => {
+  log.info(NAMESPACE, "Creating attendance...");
   const createdAttendance = await db
     .insert(attendance)
     .values(attendanceRecord)
@@ -31,6 +34,36 @@ export const queryCreateAttendance = async (attendanceRecord: AttendanceSchema) 
 
   return createdAttendance;
 }
+
+export const queryExportAttendancesToCSV = async () => {
+  const attendances = await queryGetAllAttendances();  // Fetch all attendance records
+
+  // Map the attendance data to an array of objects for CSV conversion
+  const csvData = attendances.map(record => ({
+    id: record.id,
+    userId: record.userId,
+    eventId: record.eventId,
+    attendanceDate: record.attendanceDate,
+    status: record.status,
+    reason: record.reason,
+    checkInVerifiedBy: record.checkInVerifiedBy,
+    checkOutVerifiedBy: record.checkOutVerifiedBy,
+    returnBy: record.returnBy,
+    remarks: record.remarks,
+    checkInTime: record.checkInTime,
+    checkOutTime: record.checkOutTime,
+    createdAt: record.createdAt,
+    updatedAt: record.updatedAt,
+  }));
+
+  log.info(NAMESPACE, "CSV data: ", csvData);
+
+  // Convert JSON data to CSV format synchronously
+  const csvString = await writeToString(csvData, { headers: true });
+  log.info(NAMESPACE, "CSV string: ", csvString);
+  return csvString;
+};
+
 
 export const queryGetAllAttendances = async () => {
   const attendances = await db
@@ -145,7 +178,9 @@ export const queryUpdateAttendance = async (
       attendanceDate: attendance.attendanceDate,
       status: attendance.status,
       reason: attendance.reason,
-      verifiedBy: attendance.verifiedBy,
+      checkInVerifiedBy: attendance.checkInVerifiedBy,
+      checkOutVerifiedBy: attendance.checkOutVerifiedBy,
+      returnBy: attendance.returnBy,
       remarks: attendance.remarks,
       updatedAt: attendance.updatedAt
     })
