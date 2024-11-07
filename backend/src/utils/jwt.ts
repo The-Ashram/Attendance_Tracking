@@ -54,8 +54,9 @@ export const verifyAccessToken = async (token: string) => {
   const id = decoded.id;
   const user = await queryGetUserById(id);
   // have to multiply by 1000 because the issued at time is in seconds but getTime() returns in milliseconds
-  if (user[0].updatedAt.getTime() > decoded.iat * 1000) {
-    log.info(NAMESPACE, "updated at time: ", user[0].updatedAt.getTime());
+  const updatedAtTime = new Date(user[0].updatedAt).getTime();
+  if (updatedAtTime > decoded.iat * 1000) {
+    log.info(NAMESPACE, "updated at time: ", updatedAtTime);
     log.info(NAMESPACE, "decoded is time: ", decoded.iat * 1000);
     const e = new AuthenticationError(
       "User details updated, token invalidated.",
@@ -84,9 +85,10 @@ export const verifyRefreshToken = async (token: string) => {
   const decoded = jwt.decode(token) as DecodedJWTObj;
   const id = decoded.id;
   const user = await queryGetUserById(id);
+  const updatedAtTime = new Date(user[0].updatedAt).getTime();
   // have to multiply by 1000 because the issued at time is in seconds but getTime() returns in milliseconds
-  if (user[0].updatedAt.getTime() > decoded.iat * 1000) {
-    log.info(NAMESPACE, "updated at time: ", user[0].updatedAt.getTime());
+  if (updatedAtTime > decoded.iat * 1000) {
+    log.info(NAMESPACE, "updated at time: ", updatedAtTime);
     log.info(NAMESPACE, "decoded is time: ", decoded.iat * 1000);
     const e = new AuthenticationError(
       "User details updated, token invalidated.",

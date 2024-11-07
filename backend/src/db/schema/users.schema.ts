@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   text,
   timestamp,
@@ -24,8 +24,8 @@ export const users = pgTable("users", {
   phoneNumber: varchar("phone_number", { length: 255 }).notNull(),
   phaseNumber: integer("phase_number"),
   employeeID: varchar("employee_id", { length: 255 }),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp('created_at', { mode: 'string' }).default(sql.raw(`CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Singapore'`)).notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'string' }).default(sql.raw(`CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Singapore'`)).$onUpdate(() => sql.raw(`CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Singapore'`)).notNull(),
 });
 
 export const usersRelations = relations(events, ({ many }) => ({
