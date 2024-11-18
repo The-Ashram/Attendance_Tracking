@@ -1,11 +1,11 @@
 import log from "../../config/log.config";
+import path from "path";
 import { getErrorMessage, getErrorName } from "../../utils/errorHandler";
 import { DatabaseRequestError } from "../../utils/errorTypes";
 import {
   queryCreateAttendance,
   queryDeleteAllAttendances,
   queryDeleteAttendance,
-  queryExportAttendancesToCSV,
   queryGetAllAttendances,
   queryGetAttendanceByDay,
   queryGetAttendanceByStartEndDay,
@@ -13,7 +13,8 @@ import {
   queryUpdateAttendance,
 } from "../../db/queries/attendance.query";
 import { PayloadWithDataCreateBody, PayloadWithIdData, PayloadWithIdDataDate, PayloadWithIdUpdate } from "../interfaces/attendance.interfaces";
-import { uuid } from "drizzle-orm/pg-core";
+import { createObjectCsvStringifier, createObjectCsvWriter } from "csv-writer";
+
 const NAMESPACE = "Attendance-Handler";
 
 type event = {
@@ -50,20 +51,36 @@ const createAttendance: eventHandler = async (event) => {
 }
 
 const exportAttendanceToCSV: eventHandler = async (event) => {
-  const { jwtData } = event.payload as PayloadWithIdData;
+  const { jwtData, date, startDate, endDate } = event.payload as PayloadWithIdDataDate;
   try {
-    const csvData = await queryExportAttendancesToCSV();
+    let recordsInDB = null;
+    if (date == null) {
+      if (startDate == null || endDate == null) {
+        throw new DatabaseRequestError("Date or from and to fields cannot be null.", "400");
+      } else {
+        recordsInDB = await queryGetAttendanceByStartEndDay(startDate.toDateString(), endDate.toDateString());
+      }
+    } else {
+      recordsInDB = await queryGetAttendanceByDay(date.toDateString());
+    }
 
+    const csvStringifier = createObjectCsvStringifier({
+      header: Object.keys(recordsInDB[0]).map((key) => ({ id: key, title: key })),
+    });
+
+    // Generate the CSV content
+    const csvHeader = csvStringifier.getHeaderString();
+    const csvBody = csvStringifier.stringifyRecords(recordsInDB);
+
+    // Combine header and body into a single string
+    const csvData = csvHeader + csvBody;
+
+    // Return CSV data as a downloadable response
     return {
       statusCode: 200,
-      headers: {
-        'Content-Type': 'text/csv',
-        'Content-Disposition': 'attachment; filename="attendance.csv"',
-      },
-      data: {
-        csvData: csvData,
-        jwtData: jwtData,
-      }
+      headers: { "Content-Type": "text/csv", "Content-Disposition": `attachment; filename="attendance_report.csv"` },
+      data: csvData,
+      jwtData: jwtData
     };
   } catch (error) {
     log.error(NAMESPACE, getErrorMessage(error), error);

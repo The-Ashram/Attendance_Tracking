@@ -28,10 +28,22 @@ const formatCreateRequest = (req: Request) => {
 };
 
 const formatExportCSVRequest = (req: Request) => {
+  let { date, from, to } = req.query;
+  let dateNew, startDateNew, endDateNew = null;
+  if (date) {
+    dateNew = new Date(date as string);
+  }
+  if (from && to) {
+    startDateNew = new Date(from as string);
+    endDateNew = new Date(to as string);
+  }
+  log.info("attendance-route", "Date: " + dateNew + "\nStart Date: " + startDateNew + "\nEnd Date: " + endDateNew);
   return {
     source: "express",
     payload: {
-      createData: req.body,
+      date: dateNew,
+      startDate: startDateNew,
+      endDate: endDateNew,
       jwtData: req.body.data
     }
   };
@@ -47,7 +59,6 @@ const formatGetAllAttendancesRequest = (req: Request) => {
     startDateNew = new Date(from as string);
     endDateNew = new Date(to as string);
   }
-  log.info("attendance-route", "Date: " + dateNew + "\nStart Date: " + startDateNew + "\nEnd Date: " + endDateNew);
   return {
     source: "express",
     payload: {

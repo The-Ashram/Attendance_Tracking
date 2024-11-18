@@ -46,6 +46,8 @@ export const routerEnclose: routerEncloseFunction =
         if (returnObject.statusCode >= 200 && returnObject.statusCode < 300) {
           if (returnObject.headers && returnObject.headers['Content-Type'] === 'text/csv') {
             // If it's a CSV response, send it directly as text
+            res.setHeader("Content-Type", returnObject.headers["Content-Type"]);
+            res.setHeader("Content-Disposition", returnObject.headers["Content-Disposition"]);
             return res.status(returnObject.statusCode).send(returnObject.data);
           } else {
             // Otherwise, send JSON data
