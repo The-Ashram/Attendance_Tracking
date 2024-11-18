@@ -5,7 +5,7 @@ import { AttendanceSchema } from "../../db/schema/attendance.schema";
 import { getErrorMessage } from "../../utils/errorHandler";
 import { DatabaseRequestError } from "../../utils/errorTypes";
 import { writeToString } from 'fast-csv';
-import { sql } from "drizzle-orm";
+import { and, gte, lte, sql } from "drizzle-orm";
 import { check } from "drizzle-orm/mysql-core";
 
 const NAMESPACE = "Attendance-Query";
@@ -160,6 +160,30 @@ export const queryGetAttendanceByDay = async (date: string) => {
 
   return attendanceRecord;
 };
+
+export const queryGetAttendanceByStartEndDay = async (startDate: string, endDate: string) => {
+  const attendanceRecord = await db
+    .select()
+    .from(attendance)
+    .where(and(gte(attendance.attendanceDate, startDate), lte(attendance.attendanceDate, endDate)))
+    .catch((error) => {
+      log.error(NAMESPACE, getErrorMessage(error), error);
+      const e = new DatabaseRequestError("Database query error.", "501");
+      throw e;
+    });
+
+  if (attendanceRecord.length.valueOf() === 0) {
+    log.error(
+      NAMESPACE,
+      `Database get attendance by start and end date query failed to retrieve attendance for start date ${startDate} and end date ${endDate}! Attendance retrieved: `,
+      attendanceRecord
+    );
+    const e = new DatabaseRequestError("Attendance does not exist!", "404");
+    throw e;
+  }
+
+  return attendanceRecord;
+}
 
 export const queryUpdateAttendance = async ( 
   id: string, 

@@ -3,6 +3,7 @@ import handler from "../handlers/attendance";
 import { routerEnclose, routerEncloseAuthentication } from "../../utils/routerEnclose";
 import { authenticateAccessJWT } from "../../middleware/auth";
 import { DecodedJWTObj } from "../interfaces/auth.interfaces";
+import log from "../../config/log.config";
 
 const attendanceRouter = Router();
 
@@ -37,15 +38,22 @@ const formatExportCSVRequest = (req: Request) => {
 };
 
 const formatGetAllAttendancesRequest = (req: Request) => {
-  let { date } = req.query;
-  let dateNew = null;
+  let { date, from, to } = req.query;
+  let dateNew, startDateNew, endDateNew = null;
   if (date) {
     dateNew = new Date(date as string);
   }
+  if (from && to) {
+    startDateNew = new Date(from as string);
+    endDateNew = new Date(to as string);
+  }
+  log.info("attendance-route", "Date: " + dateNew + "\nStart Date: " + startDateNew + "\nEnd Date: " + endDateNew);
   return {
     source: "express",
     payload: {
-      date: dateNew ,
+      date: dateNew,
+      startDate: startDateNew,
+      endDate: endDateNew,
       jwtData: req.body.data as DecodedJWTObj
     }
   };
@@ -98,13 +106,13 @@ const formatDeleteAttendanceByIdRequest = (req: Request) => {
 };
 
 attendanceRouter.post(
-  "/create",
+  "/",
   routerEncloseAuthentication(authenticateAccessJWT, formatAuthenticateRequest),
   routerEnclose(handler.createAttendance, formatCreateRequest)
 );
 
 attendanceRouter.get(
-  "/export-csv",
+  "/export",
   routerEncloseAuthentication(authenticateAccessJWT, formatAuthenticateRequest),
   routerEnclose(handler.exportAttendanceToCSV, formatExportCSVRequest)
 );

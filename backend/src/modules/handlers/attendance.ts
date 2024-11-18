@@ -8,6 +8,7 @@ import {
   queryExportAttendancesToCSV,
   queryGetAllAttendances,
   queryGetAttendanceByDay,
+  queryGetAttendanceByStartEndDay,
   queryGetAttendanceByUserId,
   queryUpdateAttendance,
 } from "../../db/queries/attendance.query";
@@ -75,14 +76,22 @@ const exportAttendanceToCSV: eventHandler = async (event) => {
 };
 
 const getAttendances: eventHandler = async (event) => {
-  const { id, jwtData, date } = event.payload as PayloadWithIdDataDate;
+  const { id, jwtData, date, startDate, endDate } = event.payload as PayloadWithIdDataDate;
   try {
-    const attendancesInDB =
-      id == null ? 
-        (date == null ? 
-          await queryGetAllAttendances() 
-          : await queryGetAttendanceByDay(date.toDateString()))
-        : await queryGetAttendanceByUserId(id);
+    let attendancesInDB = null;
+    if (id == null) {
+      if (date == null) {
+        if (startDate == null || endDate == null) {
+          attendancesInDB = await queryGetAllAttendances();
+        } else {
+          attendancesInDB = await queryGetAttendanceByStartEndDay(startDate.toDateString(), endDate.toDateString());
+        }
+      } else {
+        attendancesInDB = await queryGetAttendanceByDay(date.toDateString());
+      }
+    } else {
+      attendancesInDB = await queryGetAttendanceByUserId(id);
+    }
     log.info(NAMESPACE, "---------END OF GET ATTENDANCE(S) PROCESS---------");
     return {
       statusCode: 200,
