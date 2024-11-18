@@ -1,3 +1,4 @@
+import { JwtPayload } from "jsonwebtoken";
 import { UsersSchema } from "../../db/schema/users.schema";
 
 // backend/src/modules/interfaces/users.interfaces.ts
@@ -11,16 +12,22 @@ interface User {
   id: string;
   username: string;
   email: string;
-  // Add other fields as per your schema
 }
 
 interface PayloadWithIdUpdate {
   id: string;
   updateData: Partial<UsersSchema>;
+  jwtData: JwtPayload; 
+}
+
+interface PayloadWithIdData {
+  id: string;
+  jwtData: JwtPayload;
 }
 
 export {
   User,
   LoginRequestBody,
   PayloadWithIdUpdate,
+  PayloadWithIdData
 }

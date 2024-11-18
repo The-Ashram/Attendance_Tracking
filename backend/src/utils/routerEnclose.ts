@@ -1,9 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import log from "../config/log.config";
-import {
-  DecodedJWTObj,
-  extractJWTReq,
-} from "../modules/interfaces/auth.interfaces";
+import { DecodedJWTObj } from "../modules/interfaces/auth.interfaces";
 
 type routerEncloseFunction = (
   fn: Function,

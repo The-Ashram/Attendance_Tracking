@@ -13,7 +13,7 @@ import {
   queryUpdateAttendance,
 } from "../../db/queries/attendance.query";
 import { PayloadWithDataCreateBody, PayloadWithIdData, PayloadWithIdDataDate, PayloadWithIdUpdate } from "../interfaces/attendance.interfaces";
-import { createObjectCsvStringifier, createObjectCsvWriter } from "csv-writer";
+import { createObjectCsvStringifier } from "csv-writer";
 
 const NAMESPACE = "Attendance-Handler";
 
@@ -75,10 +75,21 @@ const exportAttendanceToCSV: eventHandler = async (event) => {
     // Combine header and body into a single string
     const csvData = csvHeader + csvBody;
 
+    // Create a dynamic file name
+    let filename = "attendance_report.csv"; // Default filename
+    if (startDate && endDate) {
+      const formattedStartDate = startDate.toISOString().split("T")[0]; // YYYY-MM-DD
+      const formattedEndDate = endDate.toISOString().split("T")[0]; // YYYY-MM-DD
+      filename = `attendance_report_${formattedStartDate}_to_${formattedEndDate}.csv`;
+    } else if (date) {
+      const formattedDate = date.toISOString().split("T")[0]; // YYYY-MM-DD
+      filename = `attendance_report_${formattedDate}.csv`;
+    }
+    
     // Return CSV data as a downloadable response
     return {
       statusCode: 200,
-      headers: { "Content-Type": "text/csv", "Content-Disposition": `attachment; filename="attendance_report.csv"` },
+      headers: { "Content-Type": "text/csv", "Content-Disposition": `attachment; filename="${filename}"` },
       data: csvData,
       jwtData: jwtData
     };

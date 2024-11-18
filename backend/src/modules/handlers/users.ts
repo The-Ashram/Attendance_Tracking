@@ -9,10 +9,11 @@ import {
   queryUpdateUser,
 } from "../../db/queries/users.query";
 import {
+  PayloadWithIdData,
   PayloadWithIdUpdate,
 } from "../interfaces/users.interfaces";
-import { PayloadWithId } from "../interfaces/general.interfaces";
 import { hashPassword } from "../../utils/hashing";
+import { createObjectCsvStringifier } from "csv-writer";
 
 const NAMESPACE = "Users-Handler";
 
@@ -23,8 +24,45 @@ type event = {
 
 type eventHandler = (event: event) => Object;
 
+const exportUsersToCSV: eventHandler = async (event) => {
+  const jwtData = event.payload;
+  try {
+    const usersInDB = await queryGetAllUsers();
+
+    const csvStringifier = createObjectCsvStringifier({
+      header: Object.keys(usersInDB[0]).map((key) => ({ id: key, title: key })),
+    });
+
+    // Generate the CSV content
+    const csvHeader = csvStringifier.getHeaderString();
+    const csvBody = csvStringifier.stringifyRecords(usersInDB);
+
+    // Combine the header and body into a single string
+    const csvContent = `${csvHeader}${csvBody}`;
+
+    // Return CSV data as a downloadable response
+    return {
+      statusCode: 200,
+      headers: {
+        "Content-Type": "text/csv",
+        "Content-Disposition": `attachment; filename="users_report.csv"`,
+      },
+      data: csvContent,
+      jwtData: jwtData,
+    };
+  } catch (error) {
+    log.error(NAMESPACE, getErrorMessage(error), error);
+    const code = parseInt(getErrorName(error));
+    const errorCode = code || 400;
+    return {
+      statusCode: errorCode,
+      error: new Error("Export user(s) request failed."),
+    }
+  }
+}
+
 const getUsers: eventHandler = async (event) => {
-  const { id } = event.payload as PayloadWithId;
+  const { id, jwtData } = event.payload as PayloadWithIdData;
 
   try {
     const usersInDB =
@@ -35,6 +73,7 @@ const getUsers: eventHandler = async (event) => {
       data: {
         message: "User(s) have been retrieved.",
         users: usersInDB,
+        jwtData: jwtData,
       },
     };
   } catch (error) {
@@ -49,7 +88,7 @@ const getUsers: eventHandler = async (event) => {
 };
 
 const updateUser: eventHandler = async (event) => {
-  const { id, updateData } = event.payload as PayloadWithIdUpdate;
+  const { id, updateData, jwtData } = event.payload as PayloadWithIdUpdate;
   try {
     if (updateData.password) {
       updateData.password = await hashPassword(updateData.password);
@@ -64,6 +103,7 @@ const updateUser: eventHandler = async (event) => {
       data: {
         message: "User has been updated.",
         user: updatedUser,
+        jwtData: jwtData,
       },
     };
   } catch (error) {
@@ -78,7 +118,7 @@ const updateUser: eventHandler = async (event) => {
 };
 
 const deleteUsers: eventHandler = async (event) => {
-  const { id } = event.payload as PayloadWithId;
+  const { id, jwtData } = event.payload as PayloadWithIdData;
 
   try {
     const deletedUser =
@@ -89,6 +129,7 @@ const deleteUsers: eventHandler = async (event) => {
       data: {
         message: "Users has been deleted.",
         users: deletedUser,
+        jwtData: jwtData,
       },
     };
   } catch (error) {
@@ -106,4 +147,5 @@ export default {
   getUsers,
   updateUser,
   deleteUsers,
+  exportUsersToCSV
 };

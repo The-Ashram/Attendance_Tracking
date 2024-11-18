@@ -2,6 +2,7 @@ import { Request, Router } from "express";
 import handler from "../handlers/users";
 import { routerEnclose, routerEncloseAuthentication } from "../../utils/routerEnclose";
 import { authenticateAccessJWT } from "../../middleware/auth";
+import { DecodedJWTObj } from "../interfaces/auth.interfaces";
 
 const userRouter = Router();
 
@@ -15,12 +16,19 @@ const formatAuthenticateRequest = (req: Request) => {
   }
 };
 
+const formatExportUsersToCSV = (req: Request) => {
+  return {
+    source: "express",
+    payload: req.body.data as DecodedJWTObj,
+  };
+}
+
 const formatGetUserByIdRequest = (req: Request) => {
   return {
     source: "express",
     payload: {
       id: req.params.id,
-      data: req.body,
+      jwtData: req.body.data as DecodedJWTObj,
     },
   };
 };
@@ -28,7 +36,9 @@ const formatGetUserByIdRequest = (req: Request) => {
 const formatGetAllUsersRequest = (req: Request) => {
   return {
     source: "express",
-    payload: req.body,
+    payload: {
+      jwtData: req.body.data as DecodedJWTObj,
+    }
   };
 };
 
@@ -38,6 +48,7 @@ const formatUpdateUserRequest = (req: Request) => {
     payload: {
       id: req.params.id,
       updateData: req.body,
+      jwtData: req.body.data as DecodedJWTObj
     },
   };
 };
@@ -45,7 +56,9 @@ const formatUpdateUserRequest = (req: Request) => {
 const formatDeleteAllUsersRequest = (req: Request) => {
   return {
     source: "express",
-    payload: req.body,
+    payload: {
+      jwtData: req.body.data as DecodedJWTObj,
+    }
   };
 };
 
@@ -54,10 +67,16 @@ const formatDeleteUserById = (req: Request) => {
     source: "express",
     payload: {
       id: req.params.id,
-      data: req.body,
+      jwtData: req.body,
     },
   };
 };
+
+userRouter.get(
+  "/export",
+  routerEncloseAuthentication(authenticateAccessJWT, formatAuthenticateRequest),
+  routerEnclose(handler.exportUsersToCSV, formatExportUsersToCSV)
+)
 
 userRouter.get(
   "/", 

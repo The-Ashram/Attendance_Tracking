@@ -22,7 +22,7 @@ const formatCreateRequest = (req: Request) => {
     source: "express",
     payload: {
       createData: req.body,
-      jwtData: req.body.data
+      jwtData: req.body.data as DecodedJWTObj
     }
   };
 };
@@ -44,7 +44,7 @@ const formatExportCSVRequest = (req: Request) => {
       date: dateNew,
       startDate: startDateNew,
       endDate: endDateNew,
-      jwtData: req.body.data
+      jwtData: req.body.data as DecodedJWTObj
     }
   };
 };
