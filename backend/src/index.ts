@@ -31,14 +31,6 @@ app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/attendance", attendanceRouter);
 
-app.use(cors({
-    origin: '*', // Replace '*' with your frontend's domain for better security
-    methods: ['GET', 'POST', 'PATCH', 'DELETE'], // Allowed HTTP methods
-    allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers in requests
-    exposedHeaders: ['Content-Disposition'], // Expose the Content-Disposition header to the browser
-}));
-
-
 const server = http.createServer(app);
 
 server.listen(port, () => {
