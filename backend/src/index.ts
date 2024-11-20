@@ -41,3 +41,5 @@ server.listen(port, () => {
 app.get("/", (req, res) => {
   res.send("Hello, backend server is now live!");
 });
+
+export default app;
