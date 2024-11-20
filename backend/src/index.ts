@@ -21,6 +21,7 @@ console.log(process.env.POSTGRES_HOST);
 
 app.use(
   cors({
+    origin: "*", // Allow requests from all origins (modify for production)
     credentials: true,
   })
 );
@@ -40,3 +41,5 @@ server.listen(port, () => {
 app.get("/", (req, res) => {
   res.send("Hello, backend server is now live!");
 });
+
+export default app;
