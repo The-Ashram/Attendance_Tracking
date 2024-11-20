@@ -21,6 +21,7 @@ console.log(process.env.POSTGRES_HOST);
 
 app.use(
   cors({
+    origin: "*", // Allow requests from all origins (modify for production)
     credentials: true,
   })
 );
