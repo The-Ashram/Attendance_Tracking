@@ -102,7 +102,7 @@ const updateUser: eventHandler = async (event) => {
     }
     const updatedUser = await queryUpdateUser(id, updateData);
     log.info(NAMESPACE, "---------END OF UPDATE USER PROCESS---------");
-    if (passwordIsUpdated) {
+    if (passwordIsUpdated && updatedUser[0].id == jwtData.id) {
       // sign the jwt tokens again as pw has changed
       const accessPrivateKey = Buffer.from(
         config.server.access_private_secret,
