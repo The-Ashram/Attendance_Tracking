@@ -86,10 +86,12 @@ export const verifyRefreshToken = async (token: string) => {
   const id = decoded.id;
   const user = await queryGetUserById(id);
   const updatedAtTime = new Date(user[0].updatedAt).getTime();
+  const issuedAtTime = decoded.iat * 1000;
+  const TOLERANCE_MS = 1000;
   // have to multiply by 1000 because the issued at time is in seconds but getTime() returns in milliseconds
-  if (updatedAtTime > decoded.iat * 1000) {
+  if (updatedAtTime > issuedAtTime + TOLERANCE_MS) {
     log.info(NAMESPACE, "updated at time: ", updatedAtTime);
-    log.info(NAMESPACE, "decoded is time: ", decoded.iat * 1000);
+    log.info(NAMESPACE, "decoded is time: ", issuedAtTime + TOLERANCE_MS);
     const e = new AuthenticationError(
       "User details updated, token invalidated.",
       "403"
