@@ -89,8 +89,10 @@ export const verifyRefreshToken = async (token: string) => {
   const issuedAtTime = decoded.iat * 1000;
   const TOLERANCE_MS = 10000;
   // have to multiply by 1000 because the issued at time is in seconds but getTime() returns in milliseconds
-  if (updatedAtTime > issuedAtTime + TOLERANCE_MS) {
+  if (updatedAtTime > (issuedAtTime + TOLERANCE_MS)) {
     log.info(NAMESPACE, "updated at time: ", updatedAtTime);
+    log.info(NAMESPACE, "issuedAtTime: ", issuedAtTime);
+    log.info(NAMESPACE, "tolerance: ", TOLERANCE_MS);
     log.info(NAMESPACE, "decoded is time: ", issuedAtTime + TOLERANCE_MS);
     const e = new AuthenticationError(
       "User details updated, token invalidated.",
