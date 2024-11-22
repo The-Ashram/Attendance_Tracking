@@ -56,7 +56,7 @@ export const verifyAccessToken = async (token: string) => {
   // have to multiply by 1000 because the issued at time is in seconds but getTime() returns in milliseconds
   const updatedAtTime = new Date(user[0].updatedAt).getTime();
   const issuedAtTime = decoded.iat * 1000;
-  const TOLERANCE_MS = 10000;
+  const TOLERANCE_MS = 1000;
   // have to multiply by 1000 because the issued at time is in seconds but getTime() returns in milliseconds
   if (updatedAtTime > (issuedAtTime + TOLERANCE_MS)) {
     log.info(NAMESPACE, "updated at time: ", updatedAtTime);
@@ -92,7 +92,7 @@ export const verifyRefreshToken = async (token: string) => {
   const user = await queryGetUserById(id);
   const updatedAtTime = new Date(user[0].updatedAt).getTime();
   const issuedAtTime = decoded.iat * 1000;
-  const TOLERANCE_MS = 10000;
+  const TOLERANCE_MS = 1000;
   // have to multiply by 1000 because the issued at time is in seconds but getTime() returns in milliseconds
   if (updatedAtTime > (issuedAtTime + TOLERANCE_MS)) {
     log.info(NAMESPACE, "updated at time: ", updatedAtTime);
