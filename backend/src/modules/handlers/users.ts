@@ -29,6 +29,18 @@ const exportUsersToCSV: eventHandler = async (event) => {
   try {
     const usersInDB = await queryGetAllUsers();
 
+    const parseDateTime = (dateTime: string | Date) => {
+      const isoString = new Date(dateTime).toISOString(); // Convert to ISO string
+      const [date, timeWithMs] = isoString.split("T"); // Split into date and time
+      const time = timeWithMs.split(".")[0]; // Remove milliseconds from time
+      return date + " " + time;
+    };
+
+    usersInDB.forEach((user) => {
+      user.updatedAt = parseDateTime(user.updatedAt);
+      user.createdAt = parseDateTime(user.createdAt);
+    });
+
     const csvStringifier = createObjectCsvStringifier({
       header: Object.keys(usersInDB[0]).map((key) => ({ id: key, title: key })),
     });

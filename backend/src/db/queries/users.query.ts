@@ -2,9 +2,10 @@ import db from "../../config/db";
 import log from "../../config/log.config";
 import { users } from "../../db/schema";
 import { UsersSchema } from "../../db/schema/users.schema";
-import { sql } from "drizzle-orm";
+import { inArray, sql } from "drizzle-orm";
 import { getErrorMessage } from "../../utils/errorHandler";
 import { DatabaseRequestError } from "../../utils/errorTypes";
+import { AttendanceSchema } from "../schema/attendance.schema";
 
 const NAMESPACE = "Users-Query";
 
@@ -86,6 +87,39 @@ export const queryGetUserById = async (id: string) => {
 
   return user;
 };
+
+export const queryGetUserByAttendanceRecords = async (attendanceRecords: AttendanceSchema[]) => {
+  // Extract all userId fields from attendance records
+  const userIds = attendanceRecords.map((record) => record.userId);
+
+  // Ensure there are userIds to query
+  if (userIds.length === 0) {
+    log.error(NAMESPACE, "No userIds found in attendance records!");
+    throw new DatabaseRequestError("No userIds found in attendance records!", "400");
+  }
+
+  const usersInDB = await db
+    .select()
+    .from(users)
+    .where(inArray(users.id, userIds))
+    .catch((error) => {
+      log.error(NAMESPACE, getErrorMessage(error), error);
+      const e = new DatabaseRequestError("Database get user by id query error.", "501");
+      throw e;
+    });
+
+  if (usersInDB.length.valueOf() === 0) {
+    log.error(
+      NAMESPACE,
+      `Database get user by id query failed for query by attendance records! User array retrieved: `,    
+      usersInDB
+    );
+    const e = new DatabaseRequestError("User does not exist!", "404");
+    throw e;
+  }
+
+  return usersInDB;
+}
 
 export const queryGetUserByEmail = async (email: string) => {
   const user = await db
