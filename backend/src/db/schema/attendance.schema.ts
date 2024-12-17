@@ -66,6 +66,8 @@ export const attendanceSchema = createInsertSchema(attendance, {
     checkOutVerifiedBy: true,
     returnBy: true,
     checkInTime: true,
-    checkOutTime: true
+    checkOutTime: true,
+    updatedAt: true,
+    createdAt: true
 });
 export type AttendanceSchema = z.infer<typeof attendanceSchema>

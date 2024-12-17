@@ -14,6 +14,8 @@ import {
 } from "../../db/queries/attendance.query";
 import { PayloadWithDataCreateBody, PayloadWithIdData, PayloadWithIdDataDate, PayloadWithIdUpdate } from "../interfaces/attendance.interfaces";
 import { createObjectCsvStringifier } from "csv-writer";
+import { queryGetUserByAttendanceRecords } from "../../db/queries/users.query";
+import { attendance } from "../../db/schema";
 
 const NAMESPACE = "Attendance-Handler";
 
@@ -64,13 +66,45 @@ const exportAttendanceToCSV: eventHandler = async (event) => {
       recordsInDB = await queryGetAttendanceByDay(date.toDateString());
     }
 
+    // join attendance records with users records for the same userID on only name field
+    const userRecords = await queryGetUserByAttendanceRecords(recordsInDB);
+
+    log.info(NAMESPACE, `User records updatedAt format: ${userRecords[0].updatedAt}`);
+    // Join the matching name column from userRecords to the recordsInDB array
+    const combinedRecordsInDB = recordsInDB.map((record) => {
+      const matchingUserRecord = userRecords.find((userRecord) => userRecord.id === record.userId);
+      const parseDateTime = (dateTime: string | Date) => {
+        const isoString = new Date(dateTime).toISOString(); // Convert to ISO string
+        const [date, timeWithMs] = isoString.split("T"); // Split into date and time
+        const time = timeWithMs.split(".")[0]; // Remove milliseconds from time
+        return date + " " + time;
+      };
+      return {
+        id: record.id,
+        eventId: record.eventId,
+        userId: record.userId,
+        name: matchingUserRecord?.name,
+        attendanceDate: record.attendanceDate,
+        status: record.status,
+        reason: record.reason,
+        remarks: record.remarks,
+        checkInTime: record.checkInTime,
+        checkInVerifiedBy: record.checkInVerifiedBy,
+        checkOutTime: record.checkOutTime,
+        checkOutVerifiedBy: record.checkOutVerifiedBy,
+        returnBy: record.returnBy,
+        createdAt: parseDateTime(new Date(record.createdAt)),
+        updatedAt: parseDateTime(new Date(record.updatedAt)),
+      }
+    });
+
     const csvStringifier = createObjectCsvStringifier({
-      header: Object.keys(recordsInDB[0]).map((key) => ({ id: key, title: key })),
+      header: Object.keys(combinedRecordsInDB[0]).map((key) => ({ id: key, title: key })),
     });
 
     // Generate the CSV content
     const csvHeader = csvStringifier.getHeaderString();
-    const csvBody = csvStringifier.stringifyRecords(recordsInDB);
+    const csvBody = csvStringifier.stringifyRecords(combinedRecordsInDB);
 
     // Combine header and body into a single string
     const csvData = csvHeader + csvBody;
