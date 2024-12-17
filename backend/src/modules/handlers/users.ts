@@ -14,6 +14,8 @@ import {
 } from "../interfaces/users.interfaces";
 import { hashPassword } from "../../utils/hashing";
 import { createObjectCsvStringifier } from "csv-writer";
+import config from "../../config/config";
+import { generateToken } from "../../utils/jwt";
 
 const NAMESPACE = "Users-Handler";
 
@@ -101,15 +103,49 @@ const getUsers: eventHandler = async (event) => {
 
 const updateUser: eventHandler = async (event) => {
   const { id, updateData, jwtData } = event.payload as PayloadWithIdUpdate;
+  let passwordIsUpdated = false
   try {
     if (updateData.password) {
       updateData.password = await hashPassword(updateData.password);
+      passwordIsUpdated = true
     }
     if (id == null) {
       throw new DatabaseRequestError("User id cannot be null.", "400");
     }
     const updatedUser = await queryUpdateUser(id, updateData);
     log.info(NAMESPACE, "---------END OF UPDATE USER PROCESS---------");
+    if (passwordIsUpdated && updatedUser[0].id == jwtData.id) {
+      // sign the jwt tokens again as pw has changed
+      const accessPrivateKey = Buffer.from(
+        config.server.access_private_secret,
+        "base64"
+      ).toString("ascii");
+      const refreshPrivateKey = Buffer.from(
+        config.server.refresh_private_secret,
+        "base64"
+      ).toString("ascii");
+
+      const accessToken = generateToken(
+        { id: updatedUser[0].id, email: updatedUser[0].email, role: updatedUser[0].role },
+        accessPrivateKey,
+        "accessToken"
+      );
+      const refreshToken = generateToken(
+        { id: updatedUser[0].id, email: updatedUser[0].email, role: updatedUser[0].role },
+        refreshPrivateKey,
+        "refreshToken"
+      );
+      return {
+        statusCode: 200,
+        data: {
+          message: "User has been updated. New jwt tokens issued!",
+          user: updatedUser,
+          accessToken: accessToken,
+          refreshToken: refreshToken,
+          jwtData: jwtData,
+        },
+      }
+    }
     return {
       statusCode: 200,
       data: {

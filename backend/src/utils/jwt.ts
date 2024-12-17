@@ -6,6 +6,7 @@ import { AuthenticationError } from "./errorTypes";
 import { DecodedJWTObj } from "../modules/interfaces/auth.interfaces";
 import { queryGetUserById } from "../db/queries/users.query";
 import { getErrorMessage } from "./errorHandler";
+import { DateTime } from "luxon";
 
 const NAMESPACE = "JWT-UTILS";
 
@@ -54,10 +55,15 @@ export const verifyAccessToken = async (token: string) => {
   const id = decoded.id;
   const user = await queryGetUserById(id);
   // have to multiply by 1000 because the issued at time is in seconds but getTime() returns in milliseconds
-  const updatedAtTime = new Date(user[0].updatedAt).getTime();
-  if (updatedAtTime > decoded.iat * 1000) {
+  const updatedAtTime = DateTime.fromISO(user[0].updatedAt, { zone: "utc" }).toMillis();
+  const issuedAtTime = DateTime.fromMillis(decoded.iat * 1000, { zone: "utc" }).toMillis();
+  // const TOLERANCE_MS = 30000;
+  // have to multiply by 1000 because the issued at time is in seconds but getTime() returns in milliseconds
+  if (updatedAtTime > (issuedAtTime)) {
     log.info(NAMESPACE, "updated at time: ", updatedAtTime);
-    log.info(NAMESPACE, "decoded is time: ", decoded.iat * 1000);
+    log.info(NAMESPACE, "issuedAtTime: ", issuedAtTime);
+    // log.info(NAMESPACE, "tolerance: ", TOLERANCE_MS);
+    // log.info(NAMESPACE, "decoded is time: ", issuedAtTime + TOLERANCE_MS);
     const e = new AuthenticationError(
       "User details updated, token invalidated.",
       "403"
@@ -85,11 +91,15 @@ export const verifyRefreshToken = async (token: string) => {
   const decoded = jwt.decode(token) as DecodedJWTObj;
   const id = decoded.id;
   const user = await queryGetUserById(id);
-  const updatedAtTime = new Date(user[0].updatedAt).getTime();
+  const updatedAtTime = DateTime.fromISO(user[0].updatedAt, { zone: "utc" }).toMillis();
+  const issuedAtTime = DateTime.fromMillis(decoded.iat * 1000, { zone: "utc" }).toMillis();
+  // const TOLERANCE_MS = 30000;
   // have to multiply by 1000 because the issued at time is in seconds but getTime() returns in milliseconds
-  if (updatedAtTime > decoded.iat * 1000) {
+  if (updatedAtTime > (issuedAtTime)) {
     log.info(NAMESPACE, "updated at time: ", updatedAtTime);
-    log.info(NAMESPACE, "decoded is time: ", decoded.iat * 1000);
+    log.info(NAMESPACE, "issuedAtTime: ", issuedAtTime);
+    // log.info(NAMESPACE, "tolerance: ", TOLERANCE_MS);
+    // log.info(NAMESPACE, "decoded is time: ", issuedAtTime + TOLERANCE_MS);
     const e = new AuthenticationError(
       "User details updated, token invalidated.",
       "403"
