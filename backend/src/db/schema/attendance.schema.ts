@@ -32,8 +32,8 @@ export const attendance = pgTable('attendance', {
     remarks: varchar('remarks'),
     checkInTime: timestamp('check_in_time', { mode: 'string' }),
     checkOutTime: timestamp('check_out_time', { mode: 'string' }),
-    createdAt: timestamp('created_at', { mode: 'string' }).default(sql.raw(`CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Singapore'`)).notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).default(sql.raw(`CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Singapore'`)).$onUpdate(() => sql.raw(`CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Singapore'`)).notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' }).default(sql.raw(`CURRENT_TIMESTAMP`)).notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' }).default(sql.raw(`CURRENT_TIMESTAMP`)).$onUpdate(() => sql.raw(`CURRENT_TIMESTAMP`)).notNull(),
 });
 
 export const attendanceRelations = relations(attendance, ({ one, many }) => ({
