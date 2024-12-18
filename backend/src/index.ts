@@ -9,6 +9,7 @@ import path from "path";
 import userRouter from "./modules/routes/users-routes";
 import authRouter from "./modules/routes/auth-routes";
 import attendanceRouter from "./modules/routes/attendance-routes";
+import logRouter from "./modules/routes/logs-routes";
 
 dotenv.config({
   path: path.join(__dirname, "./../.env"),
@@ -31,6 +32,7 @@ app.use(bodyParser.json());
 app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/attendance", attendanceRouter);
+app.use("/api/log", logRouter)
 
 const server = http.createServer(app);
 

@@ -11,6 +11,8 @@ import {
 import { comparePassword, hashPassword } from "../../utils/hashing";
 import { DecodedJWTObj, PayloadWithDataCreateBody } from "../interfaces/auth.interfaces";
 import { queryCreateAttendance } from "../../db/queries/attendance.query";
+import { LogsSchema } from "../../db/schema/logs.schema";
+import { queryCreateLog } from "../../db/queries/logs.query";
 
 
 type event = {
@@ -176,13 +178,29 @@ const registerNewUser: eventHandler = async (event) => {
         "---------NEW ATTENDANCE RECORD CREATED FOR RESIDENT---------"
       );
     }
-
+    // Get name of admin
+    const adminUser = await queryGetUserById(jwtData.id);
+    log.info(NAMESPACE, "---------INSERTING CREATE NEW USER LOG---------");
+    const userChanges = `ID: ${userInDB[0].id}
+Name: ${userInDB[0].name}
+Email: ${userInDB[0].email}
+Role: ${userInDB[0].role}
+Password: ${userInDB[0].password}`;
+    const logRecord: LogsSchema = {
+      tableName: "users",
+      recordId: userInDB[0].id.toString(),
+      actionType: "CREATE",
+      changes: userChanges,
+      createdBy: adminUser[0].name
+    };
+    const logRecordInDB = await queryCreateLog(logRecord);
+    log.info(NAMESPACE, "Inserted log: ", logRecordInDB);
     log.info(NAMESPACE, "---------END OF CREATE NEW USER PROCESS---------");
     if (createdAttendance) {
       return {
         statusCode: 201,
         data: {
-          message: "User has been added to database.",
+          message: "User has been added to database. Attendance record has been created.",
           user: userInDB,
           attendance: createdAttendance
         },
@@ -191,7 +209,7 @@ const registerNewUser: eventHandler = async (event) => {
       return {
         statusCode: 201,
         data: {
-          message: "User has been added to database.",
+          message: "User has been added to database. No attendance record created.",
           user: userInDB
         },
       };

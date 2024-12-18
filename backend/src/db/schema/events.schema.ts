@@ -41,4 +41,4 @@ export const eventsSchema = createInsertSchema(events, {
     title: true,
     location: true,
 }); 
-export type EvemtsSchema = z.infer<typeof eventsSchema>;
+export type EventsSchema = z.infer<typeof eventsSchema>;

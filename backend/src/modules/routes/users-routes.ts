@@ -67,7 +67,7 @@ const formatDeleteUserById = (req: Request) => {
     source: "express",
     payload: {
       id: req.params.id,
-      jwtData: req.body,
+      jwtData: req.body.data as DecodedJWTObj,
     },
   };
 };
