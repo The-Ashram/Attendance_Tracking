@@ -1,5 +1,4 @@
 import log from "../../config/log.config";
-import path from "path";
 import { getErrorMessage, getErrorName } from "../../utils/errorHandler";
 import { DatabaseRequestError } from "../../utils/errorTypes";
 import {
@@ -8,16 +7,25 @@ import {
   queryDeleteAttendance,
   queryGetAllAttendances,
   queryGetAttendanceByDay,
+  queryGetAttendanceById,
   queryGetAttendanceByStartEndDay,
   queryGetAttendanceByUserId,
   queryUpdateAttendance,
 } from "../../db/queries/attendance.query";
 import { PayloadWithDataCreateBody, PayloadWithIdData, PayloadWithIdDataDate, PayloadWithIdUpdate } from "../interfaces/attendance.interfaces";
 import { createObjectCsvStringifier } from "csv-writer";
-import { queryGetUserByAttendanceRecords } from "../../db/queries/users.query";
-import { attendance } from "../../db/schema";
+import { queryGetUserByAttendanceRecords, queryGetUserById } from "../../db/queries/users.query";
+import { LogsSchema } from "../../db/schema/logs.schema";
+import { queryCreateLog } from "../../db/queries/logs.query";
 
 const NAMESPACE = "Attendance-Handler";
+
+const parseDateTime = (dateTime: Date) => {
+  const isoString = dateTime.toISOString(); // Convert to ISO string
+  const [date, timeWithMs] = isoString.split("T"); // Split into date and time
+  const time = timeWithMs.split(".")[0]; // Remove milliseconds from time
+  return date + " " + time;
+};
 
 type event = {
   source: string;
@@ -32,6 +40,28 @@ const createAttendance: eventHandler = async (event) => {
   try {
 
     const createdAttendance = await queryCreateAttendance(createData);
+    log.info(NAMESPACE, "---------INSERTING CREATE ATTENDANCE LOG---------");
+    // Get name of admin
+    const adminUser = await queryGetUserById(jwtData.id);
+    const attendanceChanges = `User ID: ${createdAttendance[0].userId}
+Event ID: ${createdAttendance[0].eventId}
+Status: ${createdAttendance[0].status}
+Reason: ${createdAttendance[0].reason}
+Remarks: ${createdAttendance[0].remarks}
+Check In Time: ${createdAttendance[0].checkInTime}
+Check In Verified By: ${createdAttendance[0].checkInVerifiedBy}
+Check Out Time: ${createdAttendance[0].checkOutTime}
+Check Out Verified By: ${createdAttendance[0].checkOutVerifiedBy}
+Return By: ${createdAttendance[0].returnBy}`;
+    const logRecord: LogsSchema = {
+      tableName: "attendance",
+      recordId: createdAttendance[0].id.toString(),
+      actionType: "CREATE",
+      changes: attendanceChanges,
+      createdBy: adminUser[0].name
+    }
+    const logRecordInDB = await queryCreateLog(logRecord);
+    log.info(NAMESPACE, "Inserted log: ", logRecordInDB);
     log.info(NAMESPACE, "---------END OF CREATE ATTENDANCE PROCESS---------");
     return {
       statusCode: 201,
@@ -69,16 +99,9 @@ const exportAttendanceToCSV: eventHandler = async (event) => {
     // join attendance records with users records for the same userID on only name field
     const userRecords = await queryGetUserByAttendanceRecords(recordsInDB);
 
-    log.info(NAMESPACE, `User records updatedAt format: ${userRecords[0].updatedAt}`);
     // Join the matching name column from userRecords to the recordsInDB array
     const combinedRecordsInDB = recordsInDB.map((record) => {
       const matchingUserRecord = userRecords.find((userRecord) => userRecord.id === record.userId);
-      const parseDateTime = (dateTime: string | Date) => {
-        const isoString = new Date(dateTime).toISOString(); // Convert to ISO string
-        const [date, timeWithMs] = isoString.split("T"); // Split into date and time
-        const time = timeWithMs.split(".")[0]; // Remove milliseconds from time
-        return date + " " + time;
-      };
       return {
         id: record.id,
         eventId: record.eventId,
@@ -93,8 +116,8 @@ const exportAttendanceToCSV: eventHandler = async (event) => {
         checkOutTime: record.checkOutTime,
         checkOutVerifiedBy: record.checkOutVerifiedBy,
         returnBy: record.returnBy,
-        createdAt: parseDateTime(new Date(record.createdAt)),
-        updatedAt: parseDateTime(new Date(record.updatedAt)),
+        createdAt: record.createdAt,
+        updatedAt: record.updatedAt,
       }
     });
 
@@ -132,7 +155,7 @@ const exportAttendanceToCSV: eventHandler = async (event) => {
     const code = parseInt(getErrorName(error)) || 500;
     return {
       statusCode: code,
-      error: new Error("CSV export failed."),
+      error: new Error("CSV export attendance failed."),
     };
   }
 };
@@ -180,7 +203,46 @@ const updateAttendance: eventHandler = async (event) => {
     if (id == null) {
       throw new DatabaseRequestError("Attendance id cannot be null.", "400");
     }
+    const oldAttendance = await queryGetAttendanceById(id);
     const updatedAttendance = await queryUpdateAttendance(id, updateData);
+    log.info(NAMESPACE, "---------INSERTING UPDATE ATTENDANCE LOG---------");
+    // Get name of admin
+    const adminUser = await queryGetUserById(jwtData.id);
+    
+    const updatedRecord = `Before:
+  User ID: ${oldAttendance[0].userId}
+  Event ID: ${oldAttendance[0].eventId}
+  Status: ${oldAttendance[0].status}
+  Reason: ${oldAttendance[0].reason}
+  Remarks: ${oldAttendance[0].remarks}
+  Check In Time: ${oldAttendance[0].checkInTime}
+  Check In Verified By: ${oldAttendance[0].checkInVerifiedBy}
+  Check Out Time: ${oldAttendance[0].checkOutTime}
+  Check Out Verified By: ${oldAttendance[0].checkOutVerifiedBy}
+  Return By: ${oldAttendance[0].returnBy}
+  Created At: ${oldAttendance[0].createdAt}
+  Updated At: ${oldAttendance[0].updatedAt}
+After:
+  User ID: ${updatedAttendance[0].userId}
+  Event ID: ${updatedAttendance[0].eventId}
+  Status: ${updatedAttendance[0].status}
+  Reason: ${updatedAttendance[0].reason}
+  Remarks: ${updatedAttendance[0].remarks}
+  Check In Time: ${updatedAttendance[0].checkInTime}
+  Check In Verified By: ${updatedAttendance[0].checkInVerifiedBy}
+  Check Out Time: ${updatedAttendance[0].checkOutTime}
+  Check Out Verified By: ${updatedAttendance[0].checkOutVerifiedBy}
+  Return By: ${updatedAttendance[0].returnBy}
+  Updated At: ${updatedAttendance[0].updatedAt}`
+    const logRecord: LogsSchema = {
+      tableName: "attendance",
+      recordId: id.toString(),
+      actionType: "UPDATE",
+      changes: updatedRecord,
+      createdBy: adminUser[0].name
+    }
+    const logRecordInDB = await queryCreateLog(logRecord);
+    log.info(NAMESPACE, "Inserted log: ", logRecordInDB);
     log.info(NAMESPACE, "---------END OF UPDATE ATTENDANCE PROCESS---------");
     return {
       statusCode: 200,
@@ -208,6 +270,23 @@ const deleteAttendances: eventHandler = async (event) => {
       id == null
         ? await queryDeleteAllAttendances()
         : await queryDeleteAttendance(id);
+    // Get name of admin
+    const adminUser = await queryGetUserById(jwtData.id);
+    log.info(NAMESPACE, "---------INSERTING DELETE ATTENDANCE LOG---------");
+    const attendanceChanges = id == null
+      ? deletedAttendances.map((attendance) => `ID: ${attendance.id}, User ID: ${attendance.userId}, Event ID: ${attendance.eventId}`).join("\n")
+      : `ID: ${deletedAttendances[0].id}, User ID: ${deletedAttendances[0].userId}, Event ID: ${deletedAttendances[0].eventId}`;
+    const logRecord: LogsSchema = {
+      tableName: "attendance",
+      recordId: id == null 
+      ? deletedAttendances.map((attendance) => attendance.id.toString()).join(", ") 
+      : id.toString(),
+          actionType: "DELETE",
+      changes: attendanceChanges,
+      createdBy: adminUser[0].name
+    }
+    const logRecordInDB = await queryCreateLog(logRecord);
+    log.info(NAMESPACE, "Inserted log: ", logRecordInDB);
     log.info(NAMESPACE, "---------END OF DELETE ATTENDANCE(S) PROCESS---------");
     return {
       statusCode: 200,

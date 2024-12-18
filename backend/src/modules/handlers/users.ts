@@ -16,6 +16,8 @@ import { hashPassword } from "../../utils/hashing";
 import { createObjectCsvStringifier } from "csv-writer";
 import config from "../../config/config";
 import { generateToken } from "../../utils/jwt";
+import { LogsSchema } from "../../db/schema/logs.schema";
+import { queryCreateLog } from "../../db/queries/logs.query";
 
 const NAMESPACE = "Users-Handler";
 
@@ -30,18 +32,6 @@ const exportUsersToCSV: eventHandler = async (event) => {
   const jwtData = event.payload;
   try {
     const usersInDB = await queryGetAllUsers();
-
-    const parseDateTime = (dateTime: string | Date) => {
-      const isoString = new Date(dateTime).toISOString(); // Convert to ISO string
-      const [date, timeWithMs] = isoString.split("T"); // Split into date and time
-      const time = timeWithMs.split(".")[0]; // Remove milliseconds from time
-      return date + " " + time;
-    };
-
-    usersInDB.forEach((user) => {
-      user.updatedAt = parseDateTime(user.updatedAt);
-      user.createdAt = parseDateTime(user.createdAt);
-    });
 
     const csvStringifier = createObjectCsvStringifier({
       header: Object.keys(usersInDB[0]).map((key) => ({ id: key, title: key })),
@@ -112,7 +102,41 @@ const updateUser: eventHandler = async (event) => {
     if (id == null) {
       throw new DatabaseRequestError("User id cannot be null.", "400");
     }
+    const oldUser = await queryGetUserById(id);
     const updatedUser = await queryUpdateUser(id, updateData);
+    // Get name of admin
+    const adminUser = await queryGetUserById(jwtData.id);
+    log.info(NAMESPACE, "---------INSERTING UPDATE USER LOG---------");
+    // Format the updated record as a string
+    const updatedRecord = `Before:
+  Name: ${oldUser[0].name}
+  Email: ${oldUser[0].email}
+  Role: ${oldUser[0].role}
+  Password: ${oldUser[0].password}
+  Phone Number: ${oldUser[0].phoneNumber}
+  Phase Number: ${oldUser[0].phaseNumber}
+  Employee ID: ${oldUser[0].employeeID}
+  Created At: ${oldUser[0].createdAt}
+  Updated At: ${oldUser[0].updatedAt}
+
+After:
+  Name: ${updatedUser[0].name}
+  Email: ${updatedUser[0].email}
+  Role: ${updatedUser[0].role}
+  Password: ${updatedUser[0].password}
+  Phone Number: ${updatedUser[0].phoneNumber}
+  Phase Number: ${updatedUser[0].phaseNumber}
+  Employee ID: ${updatedUser[0].employeeID}
+  Updated At: ${updatedUser[0].updatedAt}`;
+    const logRecord: LogsSchema = {
+      tableName: "users",
+      recordId: id.toString(),
+      actionType: "UPDATE",
+      changes: updatedRecord,
+      createdBy: adminUser[0].name
+    }
+    const logRecordInDB = await queryCreateLog(logRecord);
+    log.info(NAMESPACE, "Inserted log: ", logRecordInDB);
     log.info(NAMESPACE, "---------END OF UPDATE USER PROCESS---------");
     if (passwordIsUpdated && updatedUser[0].id == jwtData.id) {
       // sign the jwt tokens again as pw has changed
@@ -171,6 +195,25 @@ const deleteUsers: eventHandler = async (event) => {
   try {
     const deletedUser =
       id == null ? await queryDeleteAllUsers() : await queryDeleteUser(id);
+    // Get name of admin
+    log.info(NAMESPACE, "id of admin: ", jwtData.id);
+    const adminUser = await queryGetUserById(jwtData.id);
+    log.info(NAMESPACE, "---------INSERTING DELETE USER LOG---------");
+    const userChanges = id == null
+      ? deletedUser.map((user) => `ID: ${user.id}, Name: ${user.name}, Email: ${user.email}`).join("\n")
+      : `ID: ${deletedUser[0].id}, Name: ${deletedUser[0].name}, Email: ${deletedUser[0].email}`;
+
+    const logRecord: LogsSchema = {
+      tableName: "users",
+      recordId: id == null
+        ? deletedUser.map((user) => user.id.toString()).join(", ")
+        : id.toString(),
+      actionType: "DELETE",
+      changes: userChanges,
+      createdBy: adminUser[0].name
+    }
+    const logRecordInDB = await queryCreateLog(logRecord);
+    log.info(NAMESPACE, "Inserted log: ", logRecordInDB);
     log.info(NAMESPACE, "---------END OF DELETE USER(S) PROCESS---------");
     return {
       statusCode: 200,

@@ -44,7 +44,7 @@ export const queryGetAllLogs = async () => {
     throw e;
   };
 
-  return logs;
+  return logsRecord;
 };
 
 export const queryGetLogsByStartEndDay = async (startDay: string, endDay: string) => {
@@ -64,7 +64,7 @@ export const queryGetLogsByStartEndDay = async (startDay: string, endDay: string
     throw e;
   };
 
-  return logs;
+  return logsRecord;
 };
 
 export const queryGetLogsByDay = async (date: string) => {
@@ -84,5 +84,5 @@ export const queryGetLogsByDay = async (date: string) => {
     throw e;
   };
 
-  return logs;
+  return logsRecord;
 };

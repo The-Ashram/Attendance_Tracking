@@ -159,6 +159,9 @@ export const queryUpdateUser = async (
       name: users.name,
       role: users.role,
       email: users.email,
+      phoneNumber: users.phoneNumber,
+      phaseNumber: users.phaseNumber,
+      employeeID: users.employeeID,
       password: users.password,
       updatedAt: users.updatedAt,
     })

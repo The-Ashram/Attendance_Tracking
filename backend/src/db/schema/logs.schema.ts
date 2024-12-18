@@ -10,7 +10,7 @@ export const logs = pgTable("logs", {
   actionType: text("action_type").notNull(), // "CREATE" or "UPDATE" or "DELETE"
   changes: jsonb("changes"), // JSON object of changes
   createdBy: text("done_by").notNull(), // User who triggered the action
-  createdAt: timestamp('created_at', { mode: 'string' }).default(sql.raw(`CURRENT_TIMESTAMP`)).notNull(),
+  createdAt: timestamp('created_at', { mode: 'string' }).default(sql.raw(`CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Singapore'`)).notNull(),
 });
 
 export const logsSchema = createInsertSchema(logs, {

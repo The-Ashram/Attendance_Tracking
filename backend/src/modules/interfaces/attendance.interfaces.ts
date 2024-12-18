@@ -24,7 +24,6 @@ interface PayloadWithIdDataDate {
   startDate: Date | null;
   endDate: Date | null;
   jwtData: JwtPayload;
-
 }
 
 export {
