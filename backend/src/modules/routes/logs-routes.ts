@@ -7,6 +7,8 @@ import log from "../../config/log.config";
 
 const logRouter = Router();
 
+const NAMESPACE = 'log-route'
+
 const formatAuthenticateRequest = (req: Request) => {
   const accessToken: string | undefined = req.headers.authorization?.split(' ')[1];
   return {
@@ -26,7 +28,7 @@ const formatExportLogsToCSV = (req: Request) => {
     startDateNew = new Date(from as string);
     endDateNew = new Date(to as string);
   }
-  log.info("attendance-route", "Date: " + dateNew + "\nStart Date: " + startDateNew + "\nEnd Date: " + endDateNew);
+  log.info(NAMESPACE, "Date: " + dateNew + "\nStart Date: " + startDateNew + "\nEnd Date: " + endDateNew);
   return {
     source: "express",
     payload: {
