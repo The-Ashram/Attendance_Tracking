@@ -26,7 +26,7 @@ const exportLogsToCSV: eventHandler = async (event) => {
         logsInDB = await queryGetLogsByStartEndDay(startDate.toISOString(), endDate.toISOString());
       }
     } else {
-      logsInDB = await queryGetLogsByDay(date.toDateString());
+      logsInDB = await queryGetLogsByDay(date.toISOString());
     }
 
     const csvStringifier = createObjectCsvStringifier({
