@@ -17,11 +17,12 @@ const exportLogsToCSV: eventHandler = async (event) => {
   const { jwtData, date, startDate, endDate } = event.payload as PayloadWithIdDataDate;
   try {
     let logsInDB = null;
+    endDate?.setUTCHours(23, 59, 59, 999);  // ensure that query is done for all records on same day
     if (date == null) {
       if (startDate == null || endDate == null) {
         throw new DatabaseRequestError("Date or from and to fields cannot be null.", "400");
       } else {
-        logsInDB = await queryGetLogsByStartEndDay(startDate.toDateString(), endDate.toDateString());
+        logsInDB = await queryGetLogsByStartEndDay(startDate.toISOString(), endDate.toISOString());
       }
     } else {
       logsInDB = await queryGetLogsByDay(date.toDateString());

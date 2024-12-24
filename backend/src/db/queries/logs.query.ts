@@ -4,6 +4,7 @@ import log from "../../config/log.config";
 import { DatabaseRequestError } from "../../utils/errorTypes";
 import { logs, LogsSchema } from "../schema/logs.schema";
 
+
 const NAMESPACE = "Logs-Query";
 
 export const queryCreateLog = async (logRecord: LogsSchema) => {
@@ -49,14 +50,14 @@ export const queryGetAllLogs = async () => {
 
 export const queryGetLogsByStartEndDay = async (startDay: string, endDay: string) => {
   const logsRecord = await db
-  .select()
-  .from(logs)
-  .where(and(gte(logs.createdAt, startDay), lte(logs.createdAt, endDay)))
-  .catch((error) => {
-    log.error(NAMESPACE, "Error getting logs:", error);
-    const e = new DatabaseRequestError("Database get logs query error.", "501");
-    throw e;
-  });
+    .select()
+    .from(logs)
+    .where(and(gte(logs.createdAt, startDay), lte(logs.createdAt, endDay)))
+    .catch((error) => {
+      log.error(NAMESPACE, "Error getting logs:", error);
+      const e = new DatabaseRequestError("Database get logs query error.", "501");
+      throw e;
+    });
 
   if (logsRecord.length.valueOf() === 0) {
     log.error(NAMESPACE, "Database get logs query failed to retrieve logs! Logs retrieved: ", logsRecord);
