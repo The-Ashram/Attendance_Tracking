@@ -18,6 +18,7 @@ const exportLogsToCSV: eventHandler = async (event) => {
   try {
     let logsInDB = null;
     endDate?.setUTCHours(23, 59, 59, 999);  // ensure that query is done for all records on same day
+    date?.setUTCHours(23, 59, 59, 999);  // ensure that query is done for all records on same day
     if (date == null) {
       if (startDate == null || endDate == null) {
         throw new DatabaseRequestError("Date or from and to fields cannot be null.", "400");
