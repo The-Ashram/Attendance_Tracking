@@ -4,6 +4,7 @@ import log from "../../config/log.config";
 import { DatabaseRequestError } from "../../utils/errorTypes";
 import { logs, LogsSchema } from "../schema/logs.schema";
 
+
 const NAMESPACE = "Logs-Query";
 
 export const queryCreateLog = async (logRecord: LogsSchema) => {
@@ -49,14 +50,14 @@ export const queryGetAllLogs = async () => {
 
 export const queryGetLogsByStartEndDay = async (startDay: string, endDay: string) => {
   const logsRecord = await db
-  .select()
-  .from(logs)
-  .where(and(gte(logs.createdAt, startDay), lte(logs.createdAt, endDay)))
-  .catch((error) => {
-    log.error(NAMESPACE, "Error getting logs:", error);
-    const e = new DatabaseRequestError("Database get logs query error.", "501");
-    throw e;
-  });
+    .select()
+    .from(logs)
+    .where(and(gte(logs.createdAt, startDay), lte(logs.createdAt, endDay)))
+    .catch((error) => {
+      log.error(NAMESPACE, "Error getting logs:", error);
+      const e = new DatabaseRequestError("Database get logs query error.", "501");
+      throw e;
+    });
 
   if (logsRecord.length.valueOf() === 0) {
     log.error(NAMESPACE, "Database get logs query failed to retrieve logs! Logs retrieved: ", logsRecord);
@@ -68,10 +69,14 @@ export const queryGetLogsByStartEndDay = async (startDay: string, endDay: string
 };
 
 export const queryGetLogsByDay = async (date: string) => {
+  const dateObj = new Date(date);
+  const startOfDay = new Date(dateObj);
+  startOfDay.setUTCHours(0, 0, 0, 0); // Set to 00:00:00.000
+  const endOfDay = new Date(dateObj);
   const logsRecord = await db
   .select()
   .from(logs)
-  .where(sql`${logs.createdAt} = ${date}`)
+  .where(and(gte(logs.createdAt, startOfDay.toISOString()), lte(logs.createdAt, endOfDay.toISOString())))
   .catch((error) => {
     log.error(NAMESPACE, "Error getting logs:", error);
     const e = new DatabaseRequestError("Database get logs query error.", "501");

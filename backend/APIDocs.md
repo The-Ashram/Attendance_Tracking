@@ -10,8 +10,8 @@ Base URL: `http://localhost:<PORT>/api/`
 * **GET** `attendance/?from=YYYY-MM-DD&to=YYYY-MM-DD`: Retrieves all attendances between two dates
 * **GET** `attendance/export?from=YYYY-MM-DD&to=YYYY-MM-DD`: Exports all attendances between two dates
 * **GET** `attendance/export?date=YYYY-MM-DD`: Exports all attendances for a specific date
-* **PUT** `user/:id`: Updates a specific user
-* **PUT** `attendance/:id`: Updates a specific attendance where id is attendance_id
+* **PATCH** `user/:id`: Updates a specific user
+* **PATCH** `attendance/:id`: Updates a specific attendance where id is attendance_id
 * **POST** `auth/login`: Logs in a user and returns jwt tokens 
 * **POST** `auth/refresh`: Refreshes jwt access token using refresh token
 * **POST** `auth/validate`: Validates jwt both access and refresh tokens
