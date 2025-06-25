@@ -17,6 +17,7 @@ export const queryCreateUser = async (user: UsersSchema) => {
       id: users.id,
       name: users.name,
       role: users.role,
+      toNote: users.toNote,
       email: users.email,
       password: users.password,
     })
@@ -161,6 +162,7 @@ export const queryUpdateUser = async (
       email: users.email,
       phoneNumber: users.phoneNumber,
       phaseNumber: users.phaseNumber,
+      toNote: users.toNote,
       employeeID: users.employeeID,
       password: users.password,
       updatedAt: users.updatedAt,
