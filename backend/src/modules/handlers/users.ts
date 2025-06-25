@@ -115,6 +115,7 @@ const updateUser: eventHandler = async (event) => {
   Password: ${oldUser[0].password}
   Phone Number: ${oldUser[0].phoneNumber}
   Phase Number: ${oldUser[0].phaseNumber}
+  To Note: ${oldUser[0].toNote}
   Employee ID: ${oldUser[0].employeeID}
   Created At: ${oldUser[0].createdAt}
   Updated At: ${oldUser[0].updatedAt}
@@ -126,6 +127,7 @@ After:
   Password: ${updatedUser[0].password}
   Phone Number: ${updatedUser[0].phoneNumber}
   Phase Number: ${updatedUser[0].phaseNumber}
+  To Note: ${updatedUser[0].toNote}
   Employee ID: ${updatedUser[0].employeeID}
   Updated At: ${updatedUser[0].updatedAt}`;
     const logRecord: LogsSchema = {

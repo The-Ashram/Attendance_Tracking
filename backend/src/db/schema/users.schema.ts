@@ -23,6 +23,7 @@ export const users = pgTable("users", {
   password: varchar("password", { length: 255 }).notNull(),
   phoneNumber: varchar("phone_number", { length: 255 }).notNull(),
   phaseNumber: integer("phase_number"),
+  toNote: varchar("to_note", { length: 255 }).default("Nil"),
   employeeID: varchar("employee_id", { length: 255 }),
   createdAt: timestamp('created_at', { mode: 'string' }).default(sql.raw(`CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Singapore'`)).notNull(),
   updatedAt: timestamp('updated_at', { mode: 'string' }).default(sql.raw(`CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Singapore'`)).$onUpdate(() => sql.raw(`CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Singapore'`)).notNull(),
@@ -49,6 +50,7 @@ export const usersSchema = createInsertSchema(users, {
   password: true,
   phoneNumber: true,
   phaseNumber: true,
+  toNote: true,
   employeeID: true,
   createdAt: true,
   updatedAt: true
