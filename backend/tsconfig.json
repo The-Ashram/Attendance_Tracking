@@ -11,7 +11,8 @@
     "baseUrl": "backend/src",
     "sourceMap": true,
     "noImplicitAny": true,
-    "typeRoots": ["./node_modules/@types", "./src/types"]
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "ignoreDeprecations": "6.0"
 
   },
   "include": ["src/**/*"],
