@@ -29,13 +29,19 @@ const exportLogsToCSV: eventHandler = async (event) => {
       logsInDB = await queryGetLogsByDay(date.toISOString());
     }
 
+    // Convert timestamps to ISO 8601 format
+    const logsInDBIso = logsInDB.map(log => ({
+      ...log,
+      createdAt: log.createdAt ? new Date(log.createdAt).toISOString() : log.createdAt,
+    }));
+
     const csvStringifier = createObjectCsvStringifier({
-      header: Object.keys(logsInDB[0]).map((key) => ({ id: key, title: key })),
+      header: Object.keys(logsInDBIso[0]).map((key) => ({ id: key, title: key })),
     });
 
     // Generate the CSV content
     const csvHeader = csvStringifier.getHeaderString();
-    const csvBody = csvStringifier.stringifyRecords(logsInDB);
+    const csvBody = csvStringifier.stringifyRecords(logsInDBIso);
 
     // Combine the header and body into a single string
     const csvContent = `${csvHeader}${csvBody}`;
